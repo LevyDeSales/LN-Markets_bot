@@ -1,0 +1,47 @@
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.g.dart
+*.freezed.dart
+
+# Android
+app/android/.gradle/
+app/android/local.properties
+app/android/key.properties
+app/android/app/debug.apk
+app/android/captures/
+app/android/.idea/
+app/android/*.iml
+app/android/gradlew
+app/android/gradlew.bat
+app/android/gradle/
+
+# iOS
+app/ios/.last_build_id
+app/ios/Flutter/.last_build_id
+app/ios/Pods/
+app/ios/Runner.xcworkspace/
+app/ios/.symlinks/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Generated files
+app/lib/generated/
+app/assets/icon/icon.png
+
+# macOS
+.DS_Store
+
+# env
+*.env
+.env*
