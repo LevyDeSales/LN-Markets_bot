@@ -34,11 +34,13 @@ class _SettingsTabState extends State<SettingsTab> {
   late final TextEditingController _apiKey, _apiSecret, _apiPass;
   late final TextEditingController _leverage, _margin, _interval;
   late final TextEditingController _emaFast, _emaSlow, _emaSignal;
-  late final TextEditingController _tp, _sl;
+  late final TextEditingController _tp, _sl, _trailPct, _compoundPct;
 
-  String  _timeframe = '15m';
-  String  _network   = 'mainnet';
-  bool    _longOnly  = true;
+  String  _timeframe        = '15m';
+  String  _network          = 'mainnet';
+  bool    _longOnly         = true;
+  bool    _useTrailingStop  = true;
+  bool    _useCompounding   = true;
   String? _savedMsg;
 
   @override
@@ -54,17 +56,21 @@ class _SettingsTabState extends State<SettingsTab> {
     _emaFast   = TextEditingController(text: '${s.emaFast}');
     _emaSlow   = TextEditingController(text: '${s.emaSlow}');
     _emaSignal = TextEditingController(text: '${s.emaSignal}');
-    _tp        = TextEditingController(text: '${s.takeProfitPct}');
-    _sl        = TextEditingController(text: '${s.stopLossPct}');
-    _timeframe = s.timeframe;
-    _network   = s.network;
-    _longOnly  = s.longOnly;
+    _tp              = TextEditingController(text: '${s.takeProfitPct}');
+    _sl              = TextEditingController(text: '${s.stopLossPct}');
+    _trailPct        = TextEditingController(text: '${s.trailingStopPct}');
+    _compoundPct     = TextEditingController(text: '${s.compoundingPct}');
+    _timeframe       = s.timeframe;
+    _network         = s.network;
+    _longOnly        = s.longOnly;
+    _useTrailingStop = s.useTrailingStop;
+    _useCompounding  = s.useCompounding;
   }
 
   @override
   void dispose() {
     for (final c in [_apiKey, _apiSecret, _apiPass, _leverage, _margin,
-                     _interval, _emaFast, _emaSlow, _emaSignal, _tp, _sl]) {
+                     _interval, _emaFast, _emaSlow, _emaSignal, _tp, _sl, _trailPct, _compoundPct]) {
       c.dispose();
     }
     super.dispose();
@@ -92,9 +98,13 @@ class _SettingsTabState extends State<SettingsTab> {
     s.emaFast       = int.tryParse(_emaFast.text)  ?? 9;
     s.emaSlow       = int.tryParse(_emaSlow.text)  ?? 21;
     s.emaSignal     = int.tryParse(_emaSignal.text) ?? 50;
-    s.takeProfitPct = double.tryParse(_tp.text)    ?? 0;
-    s.stopLossPct   = double.tryParse(_sl.text)    ?? 0;
-    s.longOnly      = _longOnly;
+    s.takeProfitPct   = double.tryParse(_tp.text)       ?? 0;
+    s.stopLossPct     = double.tryParse(_sl.text)       ?? 0;
+    s.useTrailingStop = _useTrailingStop;
+    s.trailingStopPct = double.tryParse(_trailPct.text)   ?? 1.0;
+    s.useCompounding  = _useCompounding;
+    s.compoundingPct  = double.tryParse(_compoundPct.text) ?? 10.0;
+    s.longOnly        = _longOnly;
     await s.save();
 
     setState(() => _savedMsg = t('set_saved'));
@@ -205,7 +215,6 @@ class _SettingsTabState extends State<SettingsTab> {
           ),
           const SizedBox(height: 8),
           _field(t('set_leverage'),  _leverage,  keyboardType: TextInputType.number),
-          _field(t('set_margin'),    _margin,    keyboardType: TextInputType.number),
           _field(t('set_interval'),  _interval,  keyboardType: TextInputType.number),
 
           // ── EMAs ──────────────────────────────────────────────────────────
@@ -245,8 +254,9 @@ class _SettingsTabState extends State<SettingsTab> {
                       ),
                     ),
                     Switch(
-                      value:           _longOnly,
-                      activeColor:     AppColors.green,
+                      // ON = @Raicher Mode active = long only (longOnly=true)
+                      value:              _longOnly,
+                      activeColor:        AppColors.green,
                       inactiveTrackColor: AppColors.red.withOpacity(0.4),
                       onChanged: (v) => setState(() => _longOnly = v),
                     ),
@@ -271,7 +281,123 @@ class _SettingsTabState extends State<SettingsTab> {
                     fontStyle: FontStyle.italic)),
           ),
           _field(t('set_tp'), _tp, keyboardType: const TextInputType.numberWithOptions(decimal: true)),
-          _field(t('set_sl'), _sl, keyboardType: const TextInputType.numberWithOptions(decimal: true)),
+          // Trailing Stop toggle
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: _useTrailingStop
+                  ? const Color(0xFF0D1A2B)
+                  : AppColors.card,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: _useTrailingStop
+                    ? const Color(0xFF1E4A7C)
+                    : AppColors.divider,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        t('set_trailing_stop'),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _useTrailingStop
+                              ? const Color(0xFF64B5F6)
+                              : AppColors.textMuted,
+                        ),
+                      ),
+                    ),
+                    Switch(
+                      value:              _useTrailingStop,
+                      activeColor:        const Color(0xFF2196F3),
+                      inactiveTrackColor: AppColors.card,
+                      onChanged: (v) => setState(() => _useTrailingStop = v),
+                    ),
+                  ],
+                ),
+                Text(
+                  t('set_trailing_stop_hint'),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textMuted,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_useTrailingStop)
+            _field(t('set_trailing_pct'), _trailPct,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true))
+          else
+            _field(t('set_sl'), _sl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true)),
+
+          // Compound margin toggle
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: _useCompounding
+                  ? const Color(0xFF1A0D2B)
+                  : AppColors.card,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: _useCompounding
+                    ? const Color(0xFF5C1E9C)
+                    : AppColors.divider,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        t('set_compounding'),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _useCompounding
+                              ? const Color(0xFFCE93D8)
+                              : AppColors.textMuted,
+                        ),
+                      ),
+                    ),
+                    Switch(
+                      value:              _useCompounding,
+                      activeColor:        const Color(0xFF9C27B0),
+                      inactiveTrackColor: AppColors.card,
+                      onChanged: (v) => setState(() => _useCompounding = v),
+                    ),
+                  ],
+                ),
+                Text(
+                  t('set_compounding_hint'),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textMuted,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_useCompounding)
+            _field(t('set_compounding_pct'), _compoundPct,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true))
+          else
+            _field(t('set_margin'), _margin,
+                keyboardType: TextInputType.number),
 
           const SizedBox(height: 24),
 

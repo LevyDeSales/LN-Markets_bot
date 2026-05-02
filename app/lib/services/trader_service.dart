@@ -27,6 +27,7 @@ class PositionState {
   final double?   entryPrice;
   final double?   tpPrice;
   final double?   slPrice;
+  final double?   trailSlPrice;  // current trailing SL level (null = not trailing)
   final DateTime? openedAt;
 
   const PositionState({
@@ -35,6 +36,7 @@ class PositionState {
     this.entryPrice,
     this.tpPrice,
     this.slPrice,
+    this.trailSlPrice,
     this.openedAt,
   });
 
@@ -42,24 +44,36 @@ class PositionState {
 
   factory PositionState.empty() => const PositionState();
 
+  PositionState copyWith({double? trailSlPrice, double? slPrice}) => PositionState(
+        id:           id,
+        side:         side,
+        entryPrice:   entryPrice,
+        tpPrice:      tpPrice,
+        slPrice:      slPrice ?? this.slPrice,
+        trailSlPrice: trailSlPrice ?? this.trailSlPrice,
+        openedAt:     openedAt,
+      );
+
   factory PositionState.fromJson(Map<String, dynamic> j) => PositionState(
-        id:         j['id']   as String?,
-        side:       j['side'] as String?,
-        entryPrice: (j['entry_price'] as num?)?.toDouble(),
-        tpPrice:    (j['tp_price']    as num?)?.toDouble(),
-        slPrice:    (j['sl_price']    as num?)?.toDouble(),
-        openedAt:   j['opened_at'] != null
+        id:           j['id']            as String?,
+        side:         j['side']          as String?,
+        entryPrice:   (j['entry_price']  as num?)?.toDouble(),
+        tpPrice:      (j['tp_price']     as num?)?.toDouble(),
+        slPrice:      (j['sl_price']     as num?)?.toDouble(),
+        trailSlPrice: (j['trail_sl_price'] as num?)?.toDouble(),
+        openedAt:     j['opened_at'] != null
             ? DateTime.tryParse(j['opened_at'])
             : null,
       );
 
   Map<String, dynamic> toJson() => {
-        'id':          id,
-        'side':        side,
-        'entry_price': entryPrice,
-        'tp_price':    tpPrice,
-        'sl_price':    slPrice,
-        'opened_at':   openedAt?.toIso8601String(),
+        'id':             id,
+        'side':           side,
+        'entry_price':    entryPrice,
+        'tp_price':       tpPrice,
+        'sl_price':       slPrice,
+        'trail_sl_price': trailSlPrice,
+        'opened_at':      openedAt?.toIso8601String(),
       };
 }
 
@@ -199,7 +213,9 @@ class TraderService extends ChangeNotifier {
         'Trend | Preço: \$${result.price} | '
         'EMA${settings.emaFast}: ${result.emaFast} | '
         'EMA${settings.emaSlow}: ${result.emaSlow} | '
-        'Sinal: ${result.signal ?? 'neutro'}',
+        'Sinal: ${result.signal ?? 'neutro'} | '
+        'BB: ${result.bbFilter ? 'ok' : 'filt'} | '
+        'MACD: ${result.macdFilter ? 'ok' : 'filt'}',
       );
     } catch (e) {
       log.error('Erro ao buscar indicadores: $e');
@@ -228,6 +244,26 @@ class TraderService extends ChangeNotifier {
       return;
     }
 
+    // Trailing SL update — runs before signal logic so SL is always current
+    if (settings.useTrailingStop &&
+        _position.hasPosition &&
+        _position.side == 'long') {
+      final newSl = result.price * (1 - settings.trailingStopPct / 100);
+      final currentTrailSl = _position.trailSlPrice;
+      if (currentTrailSl == null || newSl > currentTrailSl) {
+        try {
+          await _api.setStopLoss(_position.id!, newSl);
+          _position = _position.copyWith(trailSlPrice: newSl, slPrice: newSl);
+          await _savePosition(_position);
+          log.info(
+              'Trailing SL → \$${newSl.toStringAsFixed(2)} '
+              '(${settings.trailingStopPct}% abaixo de \$${result.price.toStringAsFixed(2)})');
+        } catch (e) {
+          log.warning('Falha ao atualizar trailing SL: $e');
+        }
+      }
+    }
+
     final signal = result.signal;
 
     // Atualiza notificação com estado atual
@@ -243,8 +279,18 @@ class TraderService extends ChangeNotifier {
 
     if (!_position.hasPosition) {
       if (effectiveSignal != null) {
-        log.info('Sem posição. Abrindo $effectiveSignal...');
-        await _openNew(effectiveSignal, result.price);
+        // BB + MACD filters apply only to long entries
+        final filtered = effectiveSignal == 'long' &&
+            (!result.bbFilter || !result.macdFilter);
+        if (filtered) {
+          log.info(
+              'Sinal long bloqueado por filtro — '
+              'BB: ${result.bbFilter ? 'ok' : 'falhou'} | '
+              'MACD: ${result.macdFilter ? 'ok' : 'falhou'}. Aguardando...');
+        } else {
+          log.info('Sem posição. Abrindo $effectiveSignal...');
+          await _openNew(effectiveSignal, result.price);
+        }
       } else {
         log.info(settings.longOnly && signal == 'short'
             ? 'Modo Long Only: sinal short ignorado. Aguardando...'
@@ -269,7 +315,16 @@ class TraderService extends ChangeNotifier {
         notifyListeners();
         return;
       }
-      await _openNew(effectiveSignal, result.price);
+      final filteredFlip = effectiveSignal == 'long' &&
+          (!result.bbFilter || !result.macdFilter);
+      if (!filteredFlip) {
+        await _openNew(effectiveSignal, result.price);
+      } else {
+        log.info(
+            'Inversão long bloqueada por filtro — '
+            'BB: ${result.bbFilter ? 'ok' : 'falhou'} | '
+            'MACD: ${result.macdFilter ? 'ok' : 'falhou'}.');
+      }
       notifyListeners();
       return;
     }
@@ -306,7 +361,17 @@ class TraderService extends ChangeNotifier {
   Future<void> _openNew(String signal, double currentPrice) async {
     try {
       final side = signal == 'long' ? 'buy' : 'sell';
-      final pos  = await _api.openPosition(side);
+
+      // Compound mode: use % of current balance as margin
+      int? marginOverride;
+      if (settings.useCompounding && _balance > 0) {
+        marginOverride = (_balance * settings.compoundingPct / 100).round();
+        marginOverride = marginOverride.clamp(1000, _balance); // min 1k sats
+        log.info(
+            'Compound margin: ${settings.compoundingPct}% × $_balance sats = $marginOverride sats');
+      }
+
+      final pos = await _api.openPosition(side, marginSats: marginOverride);
 
       _stats.totalTrades++;
       if (signal == 'long') {
@@ -350,13 +415,38 @@ class TraderService extends ChangeNotifier {
           'Posição aberta: $signal | id=${_position.id} | entry=\$$entry');
 
       if (_position.id != null) {
-        try {
-          await _api.applyTpSl(_position.id!, signal, entry);
-          if (tp > 0 || sl > 0) {
-            log.info('TP/SL aplicados | TP=${tp}% | SL=${sl}%');
+        if (settings.useTrailingStop && isLong) {
+          // Set initial trailing SL; subsequent cycles will trail it upward
+          final initialTrailSl = entry * (1 - settings.trailingStopPct / 100);
+          try {
+            await _api.setStopLoss(_position.id!, initialTrailSl);
+            _position = _position.copyWith(
+                trailSlPrice: initialTrailSl, slPrice: initialTrailSl);
+            await _savePosition(_position);
+            log.info(
+                'Trailing SL inicial: \$${initialTrailSl.toStringAsFixed(2)} '
+                '(${settings.trailingStopPct}% abaixo)');
+          } catch (e) {
+            log.warning('Falha ao aplicar trailing SL inicial: $e');
           }
-        } catch (e) {
-          log.warning('Falha ao aplicar TP/SL: $e');
+          // Still apply TP if configured
+          if (tp > 0) {
+            try {
+              await _api.applyTpSl(_position.id!, signal, entry);
+              log.info('TP aplicado | TP=${tp}%');
+            } catch (e) {
+              log.warning('Falha ao aplicar TP: $e');
+            }
+          }
+        } else {
+          try {
+            await _api.applyTpSl(_position.id!, signal, entry);
+            if (tp > 0 || sl > 0) {
+              log.info('TP/SL aplicados | TP=${tp}% | SL=${sl}%');
+            }
+          } catch (e) {
+            log.warning('Falha ao aplicar TP/SL: $e');
+          }
         }
       }
     } catch (e) {

@@ -2,7 +2,7 @@
 # Build lnmarkets-bot-linux_3.0.0_amd64.deb (Flutter Linux bundle)
 set -e
 
-VERSION="3.1.0"
+VERSION="3.3.0"
 PKG="lnmarkets-bot-linux"
 DEB="${PKG}_${VERSION}_amd64.deb"
 BUILD_DIR="$(mktemp -d)"
