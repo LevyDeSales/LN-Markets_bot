@@ -37,10 +37,14 @@ class _LogsTabState extends State<LogsTab> {
 
   Color _levelColor(LogLevel level) {
     switch (level) {
-      case LogLevel.info:    return AppColors.textMain;
-      case LogLevel.warning: return AppColors.yellow;
-      case LogLevel.error:   return AppColors.red;
-      case LogLevel.debug:   return AppColors.textMuted;
+      case LogLevel.info:
+        return AppColors.textMain;
+      case LogLevel.warning:
+        return AppColors.yellow;
+      case LogLevel.error:
+        return AppColors.red;
+      case LogLevel.debug:
+        return AppColors.textMuted;
     }
   }
 
@@ -53,7 +57,8 @@ class _LogsTabState extends State<LogsTab> {
         title: Text(t('log_title')),
         actions: [
           TextButton.icon(
-            icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.textMuted),
+            icon: const Icon(Icons.delete_outline,
+                size: 18, color: AppColors.textMuted),
             label: Text(t('log_clear'),
                 style: const TextStyle(color: AppColors.textMuted)),
             onPressed: () {
@@ -65,8 +70,7 @@ class _LogsTabState extends State<LogsTab> {
       ),
       body: entries.isEmpty
           ? const Center(
-              child: Text('—',
-                  style: TextStyle(color: AppColors.textMuted)))
+              child: Text('—', style: TextStyle(color: AppColors.textMuted)))
           : ListView.builder(
               controller: _scroll,
               padding: const EdgeInsets.all(10),
@@ -77,20 +81,18 @@ class _LogsTabState extends State<LogsTab> {
                   padding: const EdgeInsets.symmetric(vertical: 1),
                   child: RichText(
                     text: TextSpan(
-                      style: const TextStyle(
-                          fontFamily: 'Courier', fontSize: 11),
+                      style:
+                          const TextStyle(fontFamily: 'Courier', fontSize: 11),
                       children: [
                         TextSpan(
                             text: '${e.timeStr} ',
-                            style: const TextStyle(
-                                color: AppColors.textMuted)),
+                            style: const TextStyle(color: AppColors.textMuted)),
                         TextSpan(
                             text: e.prefix,
                             style: TextStyle(color: _levelColor(e.level))),
                         TextSpan(
                             text: e.message,
-                            style: TextStyle(
-                                color: _levelColor(e.level))),
+                            style: TextStyle(color: _levelColor(e.level))),
                       ],
                     ),
                   ),

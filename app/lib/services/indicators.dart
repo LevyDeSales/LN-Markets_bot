@@ -3,13 +3,13 @@ import 'binance_api.dart';
 import 'settings_service.dart';
 
 class TrendResult {
-  final String? signal;   // 'long' | 'short' | null
-  final String? cross;    // 'golden' | 'death' | null
+  final String? signal; // 'long' | 'short' | null
+  final String? cross; // 'golden' | 'death' | null
   final bool confirmed;
   final double emaFast, emaSlow, emaSignal;
   final double price;
-  final bool bbFilter;    // close > BB(20) middle band
-  final bool macdFilter;  // MACD(12,26) line > signal(9)
+  final bool bbFilter; // close > BB(20) middle band
+  final bool macdFilter; // MACD(12,26) line > signal(9)
 
   const TrendResult({
     this.signal,
@@ -54,23 +54,24 @@ class Indicators {
 
     final closes = candles.map((c) => c.close).toList();
 
-    final fast   = _ema(closes, settings.emaFast);
-    final slow   = _ema(closes, settings.emaSlow);
+    final fast = _ema(closes, settings.emaFast);
+    final slow = _ema(closes, settings.emaSlow);
     final signal = _ema(closes, settings.emaSignal);
 
     // MACD(12,26,9)
-    final macdFast   = _ema(closes, 12);
-    final macdSlow   = _ema(closes, 26);
-    final macdLine   = List.generate(closes.length, (i) => macdFast[i] - macdSlow[i]);
+    final macdFast = _ema(closes, 12);
+    final macdSlow = _ema(closes, 26);
+    final macdLine =
+        List.generate(closes.length, (i) => macdFast[i] - macdSlow[i]);
     final macdSigLine = _ema(macdLine, 9);
 
     // Usa penúltimo candle (último completamente fechado)
     final idx = candles.length - 2;
 
-    final fastNow  = fast[idx],   fastPrev  = fast[idx - 1];
-    final slowNow  = slow[idx],   slowPrev  = slow[idx - 1];
-    final sigNow   = signal[idx];
-    final price    = closes[idx];
+    final fastNow = fast[idx], fastPrev = fast[idx - 1];
+    final slowNow = slow[idx], slowPrev = slow[idx - 1];
+    final sigNow = signal[idx];
+    final price = closes[idx];
 
     // Detecção de cruzamento
     String? cross;
@@ -90,25 +91,25 @@ class Indicators {
 
     // Confirmação pela EMA de sinal
     bool confirmed = true;
-    if (trend == 'long'  && price < sigNow) confirmed = false;
+    if (trend == 'long' && price < sigNow) confirmed = false;
     if (trend == 'short' && price > sigNow) confirmed = false;
 
     // Bollinger Bands(20) filter: close above middle band
-    final bbMid    = _bbMiddle(closes, idx);
+    final bbMid = _bbMiddle(closes, idx);
     final bbFilter = price > bbMid;
 
     // MACD filter: MACD line above signal line
     final macdFilter = macdLine[idx] > macdSigLine[idx];
 
     return TrendResult(
-      signal:    confirmed ? trend : null,
-      cross:     cross,
+      signal: confirmed ? trend : null,
+      cross: cross,
       confirmed: confirmed,
-      emaFast:   double.parse(fastNow.toStringAsFixed(2)),
-      emaSlow:   double.parse(slowNow.toStringAsFixed(2)),
+      emaFast: double.parse(fastNow.toStringAsFixed(2)),
+      emaSlow: double.parse(slowNow.toStringAsFixed(2)),
       emaSignal: double.parse(sigNow.toStringAsFixed(2)),
-      price:     double.parse(price.toStringAsFixed(2)),
-      bbFilter:  bbFilter,
+      price: double.parse(price.toStringAsFixed(2)),
+      bbFilter: bbFilter,
       macdFilter: macdFilter,
     );
   }

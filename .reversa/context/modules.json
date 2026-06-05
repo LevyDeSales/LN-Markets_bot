@@ -1,0 +1,696 @@
+{
+  "generated_at": "2026-06-05T04:54:42Z",
+  "modules": [
+    {
+      "name": "app-shell-ui",
+      "path": "app/lib",
+      "purpose": "Inicializacao Flutter, injecao de servicos, splash, navegacao responsiva e estrutura visual principal.",
+      "primary_files": [
+        "app/lib/main.dart",
+        "app/lib/screens/home_screen.dart",
+        "app/lib/screens/splash_screen.dart",
+        "app/lib/app_theme.dart",
+        "app/lib/i18n.dart"
+      ],
+      "functions": [
+        {
+          "name": "main",
+          "file": "app/lib/main.dart",
+          "params": [],
+          "returns": "Future<void>",
+          "confidence": "confirmed"
+        },
+        {
+          "name": "_HomeScreenState.build",
+          "file": "app/lib/screens/home_screen.dart",
+          "params": [
+            "BuildContext context"
+          ],
+          "returns": "Widget",
+          "confidence": "confirmed"
+        }
+      ],
+      "entities": [
+        {
+          "name": "LNMarketsApp",
+          "fields": [
+            {
+              "name": "settings",
+              "type": "SettingsService",
+              "required": true
+            },
+            {
+              "name": "traderService",
+              "type": "TraderService",
+              "required": true
+            },
+            {
+              "name": "logService",
+              "type": "LogService",
+              "required": true
+            }
+          ],
+          "confidence": "confirmed"
+        }
+      ],
+      "business_rules": [
+        {
+          "description": "Se nao ha credenciais, HomeScreen inicia na aba Settings.",
+          "location": "app/lib/screens/home_screen.dart:37-43",
+          "confidence": "confirmed"
+        }
+      ],
+      "dependencies": [
+        "settings-persistence",
+        "trading-engine",
+        "logging-dashboard",
+        "background-service",
+        "sponsors-remote-config"
+      ],
+      "algorithms": [
+        "Layout responsivo com breakpoint de 600px."
+      ],
+      "complexity": "medium"
+    },
+    {
+      "name": "settings-persistence",
+      "path": "app/lib/services/settings_service.dart",
+      "purpose": "Persistir credenciais, parametros de rede, estrategia, risco, idioma e opcoes operacionais.",
+      "primary_files": [
+        "app/lib/services/settings_service.dart",
+        "app/lib/screens/settings_tab.dart"
+      ],
+      "functions": [
+        {
+          "name": "SettingsService.load",
+          "file": "app/lib/services/settings_service.dart",
+          "params": [],
+          "returns": "Future<void>",
+          "confidence": "confirmed"
+        },
+        {
+          "name": "SettingsService.save",
+          "file": "app/lib/services/settings_service.dart",
+          "params": [],
+          "returns": "Future<void>",
+          "confidence": "confirmed"
+        },
+        {
+          "name": "_SettingsTabState._save",
+          "file": "app/lib/screens/settings_tab.dart",
+          "params": [],
+          "returns": "Future<void>",
+          "confidence": "confirmed"
+        }
+      ],
+      "entities": [
+        {
+          "name": "SettingsService",
+          "fields": [
+            {
+              "name": "apiKey/apiSecret/apiPassphrase",
+              "type": "String",
+              "required": false
+            },
+            {
+              "name": "network/timeframe/language",
+              "type": "String",
+              "required": true
+            },
+            {
+              "name": "leverage/marginSats/checkInterval/emaFast/emaSlow/emaSignal",
+              "type": "int",
+              "required": true
+            },
+            {
+              "name": "takeProfitPct/stopLossPct/trailingStopPct/compoundingPct",
+              "type": "double",
+              "required": true
+            },
+            {
+              "name": "longOnly/useTrailingStop/useCompounding",
+              "type": "bool",
+              "required": true
+            }
+          ],
+          "confidence": "confirmed"
+        }
+      ],
+      "business_rules": [
+        {
+          "description": "Credenciais completas exigem key, secret e passphrase nao vazios.",
+          "location": "app/lib/services/settings_service.dart:27-28",
+          "confidence": "confirmed"
+        },
+        {
+          "description": "Limite de candles e emaSignal * 3, limitado entre 150 e 500.",
+          "location": "app/lib/services/settings_service.dart:34",
+          "confidence": "confirmed"
+        }
+      ],
+      "dependencies": [
+        "shared_preferences"
+      ],
+      "algorithms": [
+        "Selecao de base URL por rede mainnet/testnet.",
+        "Parsing de inputs numericos com defaults na UI."
+      ],
+      "complexity": "medium"
+    },
+    {
+      "name": "trading-engine",
+      "path": "app/lib/services/trader_service.dart",
+      "purpose": "Executar o bot de trading automatizado, sincronizar posicoes, aplicar risco e atualizar estado observavel.",
+      "primary_files": [
+        "app/lib/services/trader_service.dart"
+      ],
+      "functions": [
+        {
+          "name": "TraderService.start",
+          "file": "app/lib/services/trader_service.dart",
+          "params": [],
+          "returns": "Future<void>",
+          "confidence": "confirmed"
+        },
+        {
+          "name": "TraderService.stop",
+          "file": "app/lib/services/trader_service.dart",
+          "params": [],
+          "returns": "void",
+          "confidence": "confirmed"
+        },
+        {
+          "name": "TraderService._runCycle",
+          "file": "app/lib/services/trader_service.dart",
+          "params": [],
+          "returns": "Future<void>",
+          "confidence": "confirmed"
+        },
+        {
+          "name": "TraderService._openNew",
+          "file": "app/lib/services/trader_service.dart",
+          "params": [
+            "String signal",
+            "double currentPrice"
+          ],
+          "returns": "Future<void>",
+          "confidence": "confirmed"
+        }
+      ],
+      "entities": [
+        {
+          "name": "SessionStats",
+          "fields": [
+            {
+              "name": "totalTrades",
+              "type": "int",
+              "required": true
+            },
+            {
+              "name": "longTrades",
+              "type": "int",
+              "required": true
+            },
+            {
+              "name": "shortTrades",
+              "type": "int",
+              "required": true
+            },
+            {
+              "name": "netPnlSats",
+              "type": "int",
+              "required": true
+            },
+            {
+              "name": "unrealizedPnl",
+              "type": "int",
+              "required": true
+            }
+          ],
+          "confidence": "confirmed"
+        },
+        {
+          "name": "PositionState",
+          "fields": [
+            {
+              "name": "id",
+              "type": "String?",
+              "required": false
+            },
+            {
+              "name": "side",
+              "type": "String?",
+              "required": false
+            },
+            {
+              "name": "entryPrice",
+              "type": "double?",
+              "required": false
+            },
+            {
+              "name": "tpPrice",
+              "type": "double?",
+              "required": false
+            },
+            {
+              "name": "slPrice",
+              "type": "double?",
+              "required": false
+            },
+            {
+              "name": "trailSlPrice",
+              "type": "double?",
+              "required": false
+            },
+            {
+              "name": "openedAt",
+              "type": "DateTime?",
+              "required": false
+            }
+          ],
+          "confidence": "confirmed"
+        }
+      ],
+      "business_rules": [
+        {
+          "description": "Modo long-only ignora sinais short para abertura e fecha long existente sem reabrir short.",
+          "location": "app/lib/services/trader_service.dart:277-278,332-347",
+          "confidence": "confirmed"
+        },
+        {
+          "description": "Entrada long e bloqueada quando filtros BB ou MACD falham.",
+          "location": "app/lib/services/trader_service.dart:282-289",
+          "confidence": "confirmed"
+        },
+        {
+          "description": "Trailing stop so sobe em posicao long quando novo SL e maior que o trailing atual.",
+          "location": "app/lib/services/trader_service.dart:247-264",
+          "confidence": "confirmed"
+        }
+      ],
+      "dependencies": [
+        "settings-persistence",
+        "indicators-strategy",
+        "external-apis-market-data",
+        "background-service",
+        "logging-dashboard"
+      ],
+      "algorithms": [
+        "Ciclo periodico de trading.",
+        "Compounding por percentual do saldo.",
+        "Calculo local de TP/SL.",
+        "Sincronizacao de posicao local com posicoes remotas."
+      ],
+      "complexity": "high"
+    },
+    {
+      "name": "indicators-strategy",
+      "path": "app/lib/services/indicators.dart",
+      "purpose": "Calcular Trend Tabajara 3.0 e filtros tecnicos.",
+      "primary_files": [
+        "app/lib/services/indicators.dart",
+        "app/lib/services/binance_api.dart"
+      ],
+      "functions": [
+        {
+          "name": "Indicators.compute",
+          "file": "app/lib/services/indicators.dart",
+          "params": [
+            "List<Candle> candles"
+          ],
+          "returns": "TrendResult",
+          "confidence": "confirmed"
+        }
+      ],
+      "entities": [
+        {
+          "name": "TrendResult",
+          "fields": [
+            {
+              "name": "signal",
+              "type": "String?",
+              "required": false
+            },
+            {
+              "name": "cross",
+              "type": "String?",
+              "required": false
+            },
+            {
+              "name": "confirmed",
+              "type": "bool",
+              "required": true
+            },
+            {
+              "name": "emaFast/emaSlow/emaSignal/price",
+              "type": "double",
+              "required": true
+            },
+            {
+              "name": "bbFilter/macdFilter",
+              "type": "bool",
+              "required": true
+            }
+          ],
+          "confidence": "confirmed"
+        }
+      ],
+      "business_rules": [
+        {
+          "description": "Usa penultimo candle fechado para evitar ruido da vela aberta.",
+          "location": "app/lib/services/indicators.dart:67-73",
+          "confidence": "confirmed"
+        },
+        {
+          "description": "Long exige EMA rapida acima da lenta e preco nao abaixo da EMA sinal.",
+          "location": "app/lib/services/indicators.dart:83-94",
+          "confidence": "confirmed"
+        },
+        {
+          "description": "Short exige EMA rapida abaixo da lenta e preco nao acima da EMA sinal.",
+          "location": "app/lib/services/indicators.dart:83-94",
+          "confidence": "confirmed"
+        }
+      ],
+      "dependencies": [
+        "settings-persistence",
+        "external-apis-market-data"
+      ],
+      "algorithms": [
+        "EMA com fator 2/(period+1).",
+        "Bollinger middle como SMA 20.",
+        "MACD 12/26 com signal 9.",
+        "Deteccao de golden/death cross."
+      ],
+      "complexity": "medium"
+    },
+    {
+      "name": "external-apis-market-data",
+      "path": "app/lib/services",
+      "purpose": "Integrar APIs externas de conta/trade, candles/preco e indicadores de mercado.",
+      "primary_files": [
+        "app/lib/services/lnmarkets_api.dart",
+        "app/lib/services/binance_api.dart",
+        "app/lib/services/market_data_service.dart"
+      ],
+      "functions": [
+        {
+          "name": "LNMarketsAPI._sign",
+          "file": "app/lib/services/lnmarkets_api.dart",
+          "params": [
+            "String timestamp",
+            "String method",
+            "String path",
+            "String params"
+          ],
+          "returns": "String",
+          "confidence": "confirmed"
+        },
+        {
+          "name": "BinanceAPI.fetchCandles",
+          "file": "app/lib/services/binance_api.dart",
+          "params": [
+            "String interval",
+            "int limit"
+          ],
+          "returns": "Future<List<Candle>>",
+          "confidence": "confirmed"
+        },
+        {
+          "name": "MarketDataService.fetch",
+          "file": "app/lib/services/market_data_service.dart",
+          "params": [
+            "bool force = false"
+          ],
+          "returns": "Future<MarketData>",
+          "confidence": "confirmed"
+        }
+      ],
+      "entities": [
+        {
+          "name": "Candle",
+          "fields": [
+            {
+              "name": "open/high/low/close/volume",
+              "type": "double",
+              "required": true
+            }
+          ],
+          "confidence": "confirmed"
+        },
+        {
+          "name": "MarketData",
+          "fields": [
+            {
+              "name": "fearGreedValue",
+              "type": "int?",
+              "required": false
+            },
+            {
+              "name": "fearGreedLabel",
+              "type": "String?",
+              "required": false
+            },
+            {
+              "name": "hashrateEh",
+              "type": "double?",
+              "required": false
+            },
+            {
+              "name": "btcDominance",
+              "type": "double?",
+              "required": false
+            },
+            {
+              "name": "fetchedAt",
+              "type": "DateTime",
+              "required": true
+            }
+          ],
+          "confidence": "confirmed"
+        }
+      ],
+      "business_rules": [
+        {
+          "description": "LN Markets lanca excecao para qualquer resposta fora de 2xx.",
+          "location": "app/lib/services/lnmarkets_api.dart:60-70",
+          "confidence": "confirmed"
+        },
+        {
+          "description": "MarketDataService reutiliza cache por ate 30 minutos.",
+          "location": "app/lib/services/market_data_service.dart:28-35",
+          "confidence": "confirmed"
+        }
+      ],
+      "dependencies": [
+        "settings-persistence"
+      ],
+      "algorithms": [
+        "Assinatura HMAC-SHA256 LN Markets.",
+        "Mapeamento de klines Binance para Candle.",
+        "Conversao de hashrate H/s para EH/s."
+      ],
+      "complexity": "high"
+    },
+    {
+      "name": "background-service",
+      "path": "app/lib/services/foreground_service.dart",
+      "purpose": "Manter o app ativo com foreground service e notificacao enquanto o bot roda.",
+      "primary_files": [
+        "app/lib/services/foreground_service.dart"
+      ],
+      "functions": [
+        {
+          "name": "ForegroundService.init",
+          "file": "app/lib/services/foreground_service.dart",
+          "params": [],
+          "returns": "void",
+          "confidence": "confirmed"
+        },
+        {
+          "name": "ForegroundService.start",
+          "file": "app/lib/services/foreground_service.dart",
+          "params": [
+            "String title",
+            "String text"
+          ],
+          "returns": "Future<void>",
+          "confidence": "confirmed"
+        }
+      ],
+      "entities": [
+        {
+          "name": "_BotTaskHandler",
+          "fields": [],
+          "confidence": "confirmed"
+        }
+      ],
+      "business_rules": [
+        {
+          "description": "Falha no foreground service nao interrompe o app.",
+          "location": "app/lib/services/foreground_service.dart:50-90",
+          "confidence": "confirmed"
+        }
+      ],
+      "dependencies": [
+        "trading-engine"
+      ],
+      "algorithms": [
+        "Inicializacao idempotente de canal de notificacao."
+      ],
+      "complexity": "low"
+    },
+    {
+      "name": "sponsors-remote-config",
+      "path": "app/lib/services",
+      "purpose": "Exibir exchanges parceiras com status/link local ou remoto.",
+      "primary_files": [
+        "app/lib/services/sponsor_service.dart",
+        "app/lib/services/remote_config_service.dart",
+        "app/lib/screens/sponsors_tab.dart",
+        "app/lib/widgets/sponsor_banner.dart"
+      ],
+      "functions": [
+        {
+          "name": "RemoteConfigService.init",
+          "file": "app/lib/services/remote_config_service.dart",
+          "params": [],
+          "returns": "Future<void>",
+          "confidence": "confirmed"
+        },
+        {
+          "name": "RemoteConfigService.forId",
+          "file": "app/lib/services/remote_config_service.dart",
+          "params": [
+            "String id"
+          ],
+          "returns": "RemoteExchange?",
+          "confidence": "confirmed"
+        }
+      ],
+      "entities": [
+        {
+          "name": "Exchange",
+          "fields": [
+            {
+              "name": "id/name/tagline/signupUrl",
+              "type": "String",
+              "required": true
+            },
+            {
+              "name": "live",
+              "type": "bool",
+              "required": true
+            }
+          ],
+          "confidence": "confirmed"
+        },
+        {
+          "name": "RemoteExchange",
+          "fields": [
+            {
+              "name": "id/signupUrl",
+              "type": "String",
+              "required": true
+            },
+            {
+              "name": "live",
+              "type": "bool",
+              "required": true
+            }
+          ],
+          "confidence": "confirmed"
+        }
+      ],
+      "business_rules": [
+        {
+          "description": "Config remota sobrescreve live e signupUrl quando existe para o mesmo id.",
+          "location": "app/lib/screens/sponsors_tab.dart:48-65",
+          "confidence": "confirmed"
+        }
+      ],
+      "dependencies": [
+        "settings-persistence"
+      ],
+      "algorithms": [
+        "Merge local/remoto por id de exchange."
+      ],
+      "complexity": "low"
+    },
+    {
+      "name": "logging-dashboard",
+      "path": "app/lib",
+      "purpose": "Exibir estado do bot, posicao, estatisticas, indicadores de mercado e historico de logs.",
+      "primary_files": [
+        "app/lib/screens/dashboard_tab.dart",
+        "app/lib/screens/logs_tab.dart",
+        "app/lib/services/log_service.dart"
+      ],
+      "functions": [
+        {
+          "name": "LogService._add",
+          "file": "app/lib/services/log_service.dart",
+          "params": [
+            "LogLevel level",
+            "String msg"
+          ],
+          "returns": "void",
+          "confidence": "confirmed"
+        },
+        {
+          "name": "_StatusBar.build",
+          "file": "app/lib/screens/dashboard_tab.dart",
+          "params": [
+            "BuildContext context"
+          ],
+          "returns": "Widget",
+          "confidence": "confirmed"
+        }
+      ],
+      "entities": [
+        {
+          "name": "LogEntry",
+          "fields": [
+            {
+              "name": "time",
+              "type": "DateTime",
+              "required": true
+            },
+            {
+              "name": "level",
+              "type": "LogLevel",
+              "required": true
+            },
+            {
+              "name": "message",
+              "type": "String",
+              "required": true
+            }
+          ],
+          "confidence": "confirmed"
+        }
+      ],
+      "business_rules": [
+        {
+          "description": "Historico de logs e limitado a 500 entradas.",
+          "location": "app/lib/services/log_service.dart:37-41",
+          "confidence": "confirmed"
+        },
+        {
+          "description": "Botao principal inicia ou para TraderService conforme estado running.",
+          "location": "app/lib/screens/dashboard_tab.dart:164-184",
+          "confidence": "confirmed"
+        }
+      ],
+      "dependencies": [
+        "trading-engine",
+        "external-apis-market-data"
+      ],
+      "algorithms": [
+        "Renderizacao reativa via AnimatedBuilder.",
+        "Atualizacao periodica de indicadores de mercado a cada 30 minutos."
+      ],
+      "complexity": "medium"
+    }
+  ]
+}

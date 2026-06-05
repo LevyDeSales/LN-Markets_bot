@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'settings_service.dart';
+import '../src/trading/lnmarkets_signer.dart';
 
 class LNMarketsAPI {
   final SettingsService settings;
@@ -10,23 +10,24 @@ class LNMarketsAPI {
   // ── Autenticação HMAC-SHA256 ──────────────────────────────────────────────
 
   String _sign(String timestamp, String method, String path, String params) {
-    final message = '$timestamp${method.toLowerCase()}$path$params';
-    final key     = utf8.encode(settings.apiSecret);
-    final msg     = utf8.encode(message);
-    final hmac    = Hmac(sha256, key);
-    final digest  = hmac.convert(msg);
-    return base64.encode(digest.bytes);
+    return signLnMarketsRequest(
+      timestamp: timestamp,
+      method: method,
+      path: path,
+      params: params,
+      secret: settings.apiSecret,
+    );
   }
 
   Map<String, String> _authHeaders(String method, String path,
       {String params = ''}) {
-    final ts  = DateTime.now().millisecondsSinceEpoch.toString();
+    final ts = DateTime.now().millisecondsSinceEpoch.toString();
     final sig = _sign(ts, method, path, params);
     return {
-      'LNM-ACCESS-KEY':        settings.apiKey,
+      'LNM-ACCESS-KEY': settings.apiKey,
       'LNM-ACCESS-PASSPHRASE': settings.apiPassphrase,
-      'LNM-ACCESS-SIGNATURE':  sig,
-      'LNM-ACCESS-TIMESTAMP':  ts,
+      'LNM-ACCESS-SIGNATURE': sig,
+      'LNM-ACCESS-TIMESTAMP': ts,
     };
   }
 
@@ -38,9 +39,10 @@ class LNMarketsAPI {
       qs = params.entries.map((e) => '${e.key}=${e.value}').join('&');
     }
     final headers = _authHeaders('GET', path, params: qs);
-    final url = Uri.parse(
-        '${settings.baseUrl}$path${qs.isNotEmpty ? '?$qs' : ''}');
-    final resp = await http.get(url, headers: headers)
+    final url =
+        Uri.parse('${settings.baseUrl}$path${qs.isNotEmpty ? '?$qs' : ''}');
+    final resp = await http
+        .get(url, headers: headers)
         .timeout(const Duration(seconds: 15));
     return _parse(resp);
   }
@@ -51,8 +53,9 @@ class LNMarketsAPI {
       ..._authHeaders('POST', path, params: bodyStr),
       'Content-Type': 'application/json',
     };
-    final url  = Uri.parse('${settings.baseUrl}$path');
-    final resp = await http.post(url, headers: headers, body: bodyStr)
+    final url = Uri.parse('${settings.baseUrl}$path');
+    final resp = await http
+        .post(url, headers: headers, body: bodyStr)
         .timeout(const Duration(seconds: 15));
     return _parse(resp);
   }
@@ -78,11 +81,12 @@ class LNMarketsAPI {
   Future<List<dynamic>> getOpenPositions() async =>
       (await _get('/v3/futures/isolated/trades/running')) as List<dynamic>;
 
-  Future<Map<String, dynamic>> openPosition(String side, {int? marginSats}) async {
+  Future<Map<String, dynamic>> openPosition(String side,
+      {int? marginSats}) async {
     return (await _post('/v3/futures/isolated/trade', {
-      'type':     'market',
-      'side':     side,
-      'margin':   marginSats ?? settings.marginSats,
+      'type': 'market',
+      'side': side,
+      'margin': marginSats ?? settings.marginSats,
       'leverage': settings.leverage,
     })) as Map<String, dynamic>;
   }
@@ -91,13 +95,11 @@ class LNMarketsAPI {
       (await _post('/v3/futures/isolated/trade/close', {'id': id}))
           as Map<String, dynamic>;
 
-  Future<void> setTakeProfit(String id, double price) async =>
-      await _post('/v3/futures/isolated/trade/takeprofit',
-          {'id': id, 'takeprofit': price});
+  Future<void> setTakeProfit(String id, double price) async => await _post(
+      '/v3/futures/isolated/trade/takeprofit', {'id': id, 'takeprofit': price});
 
-  Future<void> setStopLoss(String id, double price) async =>
-      await _post('/v3/futures/isolated/trade/stoploss',
-          {'id': id, 'stoploss': price});
+  Future<void> setStopLoss(String id, double price) async => await _post(
+      '/v3/futures/isolated/trade/stoploss', {'id': id, 'stoploss': price});
 
   Future<void> applyTpSl(String id, String side, double entryPrice) async {
     final tp = settings.takeProfitPct;
@@ -106,15 +108,13 @@ class LNMarketsAPI {
 
     final isLong = side == 'long';
     if (tp > 0) {
-      final tpPrice = isLong
-          ? entryPrice * (1 + tp / 100)
-          : entryPrice * (1 - tp / 100);
+      final tpPrice =
+          isLong ? entryPrice * (1 + tp / 100) : entryPrice * (1 - tp / 100);
       await setTakeProfit(id, double.parse(tpPrice.toStringAsFixed(2)));
     }
     if (sl > 0) {
-      final slPrice = isLong
-          ? entryPrice * (1 - sl / 100)
-          : entryPrice * (1 + sl / 100);
+      final slPrice =
+          isLong ? entryPrice * (1 - sl / 100) : entryPrice * (1 + sl / 100);
       await setStopLoss(id, double.parse(slPrice.toStringAsFixed(2)));
     }
   }

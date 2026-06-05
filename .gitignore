@@ -37,7 +37,6 @@ app/ios/.symlinks/
 
 # Generated files
 app/lib/generated/
-app/assets/icon/icon.png
 
 # macOS
 .DS_Store

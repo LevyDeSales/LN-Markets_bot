@@ -1,0 +1,197 @@
+{
+  "generated_at": "2026-06-05T04:49:44Z",
+  "project_root": "/Users/levy/Library/Mobile Documents/com~apple~CloudDocs/Levy-dev-icloud/Pessoal/LNbot/LN-Markets_bot",
+  "primary_app": "app/",
+  "legacy_seed_paths": [
+    "lib/",
+    "pubspec.yaml",
+    "setup.sh"
+  ],
+  "languages": [
+    {
+      "name": "Dart",
+      "extensions": [
+        ".dart"
+      ],
+      "file_count": 37
+    },
+    {
+      "name": "Swift",
+      "extensions": [
+        ".swift"
+      ],
+      "file_count": 7
+    },
+    {
+      "name": "C++",
+      "extensions": [
+        ".cpp",
+        ".cc",
+        ".h"
+      ],
+      "file_count": 16
+    },
+    {
+      "name": "Kotlin",
+      "extensions": [
+        ".kt",
+        ".kts"
+      ],
+      "file_count": 4
+    },
+    {
+      "name": "Shell",
+      "extensions": [
+        ".sh"
+      ],
+      "file_count": 2
+    },
+    {
+      "name": "Python",
+      "extensions": [
+        ".py"
+      ],
+      "file_count": 1
+    }
+  ],
+  "primary_language": "Dart",
+  "frameworks": [
+    {
+      "name": "Flutter",
+      "version": "sdk",
+      "source": "app/pubspec.yaml"
+    },
+    {
+      "name": "flutter_foreground_task",
+      "version": "^8.0.0",
+      "source": "app/pubspec.yaml"
+    },
+    {
+      "name": "shared_preferences",
+      "version": "^2.3.0",
+      "source": "app/pubspec.yaml"
+    },
+    {
+      "name": "http",
+      "version": "^1.2.0",
+      "source": "app/pubspec.yaml"
+    }
+  ],
+  "package_manager": "pub",
+  "entry_points": [
+    {
+      "path": "app/lib/main.dart",
+      "type": "app_entry"
+    },
+    {
+      "path": "lib/main.dart",
+      "type": "legacy_seed_entry"
+    },
+    {
+      "path": "app/android/app/src/main/kotlin/com/unknownbtc/lnmarkets_bot/MainActivity.kt",
+      "type": "android_entry"
+    },
+    {
+      "path": "app/ios/Runner/AppDelegate.swift",
+      "type": "ios_entry"
+    },
+    {
+      "path": "app/macos/Runner/MainFlutterWindow.swift",
+      "type": "macos_entry"
+    },
+    {
+      "path": "app/linux/runner/main.cc",
+      "type": "linux_entry"
+    },
+    {
+      "path": "app/windows/runner/main.cpp",
+      "type": "windows_entry"
+    },
+    {
+      "path": "app/web/index.html",
+      "type": "web_entry"
+    }
+  ],
+  "config_files": [
+    "app/pubspec.yaml",
+    "pubspec.yaml",
+    "app/analysis_options.yaml",
+    "app/pubspec.lock",
+    "app/android/app/src/main/AndroidManifest.xml",
+    "app/android/build.gradle.kts",
+    "app/android/app/build.gradle.kts",
+    "app/ios/Runner/Info.plist",
+    "app/macos/Runner/Info.plist",
+    "app/web/manifest.json"
+  ],
+  "ci_cd": [],
+  "docker": {},
+  "database_hints": [],
+  "test_framework": "flutter_test",
+  "test_file_count": 1,
+  "modules": [
+    "app-shell-ui",
+    "settings-persistence",
+    "trading-engine",
+    "indicators-strategy",
+    "external-apis-market-data",
+    "background-service",
+    "sponsors-remote-config",
+    "logging-dashboard"
+  ],
+  "external_integrations": [
+    {
+      "name": "LN Markets API",
+      "evidence": [
+        "app/lib/services/settings_service.dart",
+        "app/lib/services/lnmarkets_api.dart"
+      ]
+    },
+    {
+      "name": "Binance API",
+      "evidence": [
+        "app/lib/services/binance_api.dart"
+      ]
+    },
+    {
+      "name": "bitfood.app remote config",
+      "evidence": [
+        "app/lib/services/remote_config_service.dart"
+      ]
+    },
+    {
+      "name": "Alternative.me Fear and Greed API",
+      "evidence": [
+        "app/lib/services/market_data_service.dart"
+      ]
+    },
+    {
+      "name": "mempool.space hashrate API",
+      "evidence": [
+        "app/lib/services/market_data_service.dart"
+      ]
+    },
+    {
+      "name": "CoinGecko global market API",
+      "evidence": [
+        "app/lib/services/market_data_service.dart"
+      ]
+    }
+  ],
+  "total_files": 201,
+  "organization_suggestion": {
+    "granularity": "feature",
+    "rationale": "O projeto Flutter esta organizado principalmente por camadas tecnicas (`screens`, `services`, `widgets`) e nao por rotas ou pastas de dominio; as unidades mais estaveis sao features extraidas das classes e servicos.",
+    "signals": [],
+    "features": [
+      "aplicacao-e-navegacao",
+      "configuracoes-e-persistencia",
+      "trading-automatizado",
+      "estrategia-e-indicadores",
+      "integracoes-de-mercado",
+      "servico-em-background",
+      "patrocinadores-e-config-remota",
+      "dashboard-e-logs"
+    ]
+  }
+}

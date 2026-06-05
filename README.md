@@ -1,10 +1,17 @@
-# ⚡ LN Markets Bot — Android
+# ⚡ LN Markets Bot — Mac ARM / Flutter
 
-> Bot de trading automatizado para Bitcoin Futures na [LN Markets](https://lnmarkets.com), construído em **Flutter** para Android.
+> Bot de trading automatizado para Bitcoin Futures na [LN Markets](https://lnmarkets.com), migrado para **Flutter macOS ARM** com modo mock-safe para validação local.
 
 <p align="center">
   <img src="assets/icon/icon.png" width="120" alt="LN Markets Bot"/>
 </p>
+
+## ✅ Estado Atual
+
+- App Flutter canônico: `app/`
+- Modo seguro de teste: `LNMBOT_MOCK_MODE=true`
+- Testes automatizados usam mocks/fakes e não usam credenciais reais.
+- O padrão de rede para novas configurações é `testnet`.
 
 ## 📱 Download
 
@@ -53,24 +60,61 @@ Baseada na estratégia criada por **André Machado**, utiliza cruzamento de méd
 
 ---
 
-## 🏗️ Build do APK
+## 🧪 Validação Local Sem Trading Real
 
 ```bash
-# Pré-requisitos: Flutter SDK, Python 3 + Pillow
-pip install pillow
+cd app
+flutter pub get
+flutter analyze
+flutter test
+```
 
-# Setup completo + build do APK em um comando
+Para abrir o app no macOS usando apenas mocks:
+
+```bash
+cd app
+flutter run -d macos --dart-define=LNMBOT_MOCK_MODE=true
+```
+
+Esse modo injeta clientes fake, não inicializa chamadas remotas de mercado no shell de smoke e não usa credenciais reais.
+
+## 🏗️ Build macOS Debug
+
+```bash
+# Pré-requisitos: Flutter SDK, CocoaPods e Xcode completo com licença aceita
+cd app
+flutter build macos --debug
+```
+
+Se o Xcode estiver em um volume externo, use:
+
+```bash
+cd app
+DEVELOPER_DIR=/Volumes/SSD-500GB-1/Applications/Xcode.app/Contents/Developer flutter build macos --debug
+```
+
+Antes do build, talvez seja necessário rodar com senha:
+
+```bash
+sudo xcodebuild -license accept
+sudo xcodebuild -runFirstLaunch
+```
+
+## 🔧 Setup Seguro
+
+O script `setup.sh` agora opera diretamente sobre `app/` e não copia mais fontes legadas da raiz para dentro do app.
+
+```bash
 ./setup.sh
 ```
 
-O APK gerado estará em:
-```
-app/build/app/outputs/flutter-apk/app-release.apk
+Para incluir build macOS debug no script:
+
+```bash
+BUILD_MACOS_DEBUG=1 ./setup.sh
 ```
 
----
-
-## ⚠️ Aviso de Risco
+## ⚠️ Aviso De Risco
 
 > **Este software é fornecido apenas para fins educacionais.**
 > Trading de Bitcoin Futures envolve risco elevado de perda de capital.

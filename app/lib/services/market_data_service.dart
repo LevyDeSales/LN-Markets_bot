@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class MarketData {
-  final int?    fearGreedValue;           // 0–100
-  final String? fearGreedLabel;           // "Extreme Fear" … "Extreme Greed"
-  final double? hashrateEh;              // network hashrate in EH/s
-  final double? btcDominance;            // BTC market-cap dominance %
+  final int? fearGreedValue; // 0–100
+  final String? fearGreedLabel; // "Extreme Fear" … "Extreme Greed"
+  final double? hashrateEh; // network hashrate in EH/s
+  final double? btcDominance; // BTC market-cap dominance %
   final DateTime fetchedAt;
 
   const MarketData({
@@ -21,7 +21,7 @@ class MarketData {
 
 class MarketDataService {
   static MarketData _cache = MarketData.empty();
-  static DateTime?  _lastFetch;
+  static DateTime? _lastFetch;
 
   static MarketData get cached => _cache;
 
@@ -34,7 +34,7 @@ class MarketDataService {
       return _cache;
     }
 
-    int?    fgValue;
+    int? fgValue;
     String? fgLabel;
     double? hashrate;
     double? dominance;
@@ -45,7 +45,7 @@ class MarketDataService {
           .get(Uri.parse('https://api.alternative.me/fng/?limit=1'))
           .timeout(const Duration(seconds: 10));
       if (resp.statusCode == 200) {
-        final j   = jsonDecode(resp.body) as Map<String, dynamic>;
+        final j = jsonDecode(resp.body) as Map<String, dynamic>;
         final row = (j['data'] as List).first as Map<String, dynamic>;
         fgValue = int.tryParse(row['value'].toString());
         fgLabel = row['value_classification'] as String?;
@@ -58,7 +58,7 @@ class MarketDataService {
           .get(Uri.parse('https://mempool.space/api/v1/mining/hashrate/3d'))
           .timeout(const Duration(seconds: 10));
       if (resp.statusCode == 200) {
-        final j  = jsonDecode(resp.body) as Map<String, dynamic>;
+        final j = jsonDecode(resp.body) as Map<String, dynamic>;
         final raw = (j['currentHashrate'] as num?)?.toDouble() ?? 0;
         hashrate = raw / 1e18; // H/s → EH/s
       }
@@ -70,7 +70,7 @@ class MarketDataService {
           .get(Uri.parse('https://api.coingecko.com/api/v3/global'))
           .timeout(const Duration(seconds: 10));
       if (resp.statusCode == 200) {
-        final j   = jsonDecode(resp.body) as Map<String, dynamic>;
+        final j = jsonDecode(resp.body) as Map<String, dynamic>;
         final pct = (j['data'] as Map<String, dynamic>)['market_cap_percentage']
             as Map<String, dynamic>?;
         dominance = (pct?['btc'] as num?)?.toDouble();
@@ -81,9 +81,9 @@ class MarketDataService {
     _cache = MarketData(
       fearGreedValue: fgValue,
       fearGreedLabel: fgLabel,
-      hashrateEh:     hashrate,
-      btcDominance:   dominance,
-      fetchedAt:      now,
+      hashrateEh: hashrate,
+      btcDominance: dominance,
+      fetchedAt: now,
     );
     return _cache;
   }

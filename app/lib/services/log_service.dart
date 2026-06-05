@@ -5,15 +5,19 @@ enum LogLevel { info, warning, error, debug }
 class LogEntry {
   final DateTime time;
   final LogLevel level;
-  final String   message;
+  final String message;
   LogEntry(this.level, this.message) : time = DateTime.now();
 
   String get prefix {
     switch (level) {
-      case LogLevel.info:    return '[INFO]   ';
-      case LogLevel.warning: return '[WARN]   ';
-      case LogLevel.error:   return '[ERROR]  ';
-      case LogLevel.debug:   return '[DEBUG]  ';
+      case LogLevel.info:
+        return '[INFO]   ';
+      case LogLevel.warning:
+        return '[WARN]   ';
+      case LogLevel.error:
+        return '[ERROR]  ';
+      case LogLevel.debug:
+        return '[DEBUG]  ';
     }
   }
 
@@ -41,10 +45,10 @@ class LogService {
     _controller.add(entry);
   }
 
-  void info   (String msg) => _add(LogLevel.info,    msg);
+  void info(String msg) => _add(LogLevel.info, msg);
   void warning(String msg) => _add(LogLevel.warning, msg);
-  void error  (String msg) => _add(LogLevel.error,   msg);
-  void debug  (String msg) => _add(LogLevel.debug,   msg);
+  void error(String msg) => _add(LogLevel.error, msg);
+  void debug(String msg) => _add(LogLevel.debug, msg);
 
   void clear() => history.clear();
   void dispose() => _controller.close();

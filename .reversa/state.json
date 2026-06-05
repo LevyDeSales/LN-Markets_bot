@@ -1,0 +1,226 @@
+{
+  "version": "1.0.0",
+  "project": "LN Markets Bot",
+  "user_name": "Levy",
+  "chat_language": "pt-br",
+  "doc_language": "Português",
+  "answer_mode": "chat",
+  "doc_level": "essencial",
+  "output_folder": "_reversa_sdd",
+  "phase": "finalizado",
+  "completed": [
+    "reconhecimento",
+    "escavacao",
+    "interpretacao",
+    "geracao",
+    "revisao"
+  ],
+  "pending": [],
+  "engines": [
+    "codex"
+  ],
+  "agents": [
+    "reversa",
+    "reversa-scout",
+    "reversa-archaeologist",
+    "reversa-detective",
+    "reversa-architect",
+    "reversa-writer",
+    "reversa-reviewer"
+  ],
+  "checkpoints": {
+    "scout": {
+      "completed_at": "2026-06-05T04:54:42Z",
+      "files": [
+        "_reversa_sdd/inventory.md",
+        "_reversa_sdd/dependencies.md",
+        ".reversa/context/surface.json"
+      ],
+      "summary": {
+        "primary_language": "Dart",
+        "framework": "Flutter",
+        "modules": [
+          "app-shell-ui",
+          "settings-persistence",
+          "trading-engine",
+          "indicators-strategy",
+          "external-apis-market-data",
+          "background-service",
+          "sponsors-remote-config",
+          "logging-dashboard"
+        ],
+        "external_integrations": 6,
+        "database": "ausente"
+      }
+    },
+    "archaeologist": {
+      "completed_at": "2026-06-05T04:59:21Z",
+      "modules_analyzed": [
+        "app-shell-ui",
+        "settings-persistence",
+        "trading-engine",
+        "indicators-strategy",
+        "external-apis-market-data",
+        "background-service",
+        "sponsors-remote-config",
+        "logging-dashboard"
+      ],
+      "modules_pending": [],
+      "files": [
+        "_reversa_sdd/code-analysis.md",
+        ".reversa/context/modules.json"
+      ],
+      "summary": {
+        "main_algorithms": [
+          "Trend Tabajara 3.0",
+          "HMAC-SHA256 LN Markets",
+          "ciclo periodico de trading",
+          "trailing stop long",
+          "compounding por percentual do saldo"
+        ],
+        "entities": 9
+      }
+    },
+    "detective": {
+      "completed_at": "2026-06-05T05:00:59Z",
+      "files": [
+        "_reversa_sdd/domain.md",
+        "_reversa_sdd/state-machines.md"
+      ],
+      "summary": {
+        "business_rules": 20,
+        "adrs": 0,
+        "state_machines": 3,
+        "permissions": "sem RBAC/ACL central",
+        "gaps": 4
+      }
+    },
+    "architect": {
+      "completed_at": "2026-06-05T05:02:10Z",
+      "files": [
+        "_reversa_sdd/architecture.md",
+        "_reversa_sdd/c4-context.md"
+      ],
+      "summary": {
+        "containers": 6,
+        "external_integrations": 7,
+        "technical_debts": 5
+      }
+    },
+    "writer": {
+      "completed_at": "2026-06-05T05:06:59Z",
+      "units_generated": [
+        "aplicacao-e-navegacao",
+        "configuracoes-e-persistencia",
+        "trading-automatizado",
+        "estrategia-e-indicadores",
+        "integracoes-de-mercado",
+        "servico-em-background",
+        "patrocinadores-e-config-remota",
+        "dashboard-e-logs"
+      ],
+      "canonical_files": 24,
+      "optional_files": 0,
+      "global_files": 0,
+      "estimated_coverage": "alta para app/lib; parcial para codigo legado raiz e runners nativos gerados"
+    },
+    "reviewer": {
+      "completed_at": "2026-06-05T05:08:16Z",
+      "files": [
+        "_reversa_sdd/confidence-report.md",
+        "_reversa_sdd/questions.md"
+      ],
+      "summary": {
+        "specs_reviewed": 24,
+        "cross_review": "nao realizada",
+        "reclassifications": 0,
+        "questions": 3,
+        "confidence_confirmed": 388,
+        "confidence_inferred": 20,
+        "confidence_gaps": 14
+      }
+    },
+    "regression_check": {
+      "completed_at": "2026-06-05T05:08:16Z",
+      "status": "not_applicable",
+      "reason": "Nenhum _reversa_forward/*/regression-watch.md encontrado."
+    }
+  },
+  "redator_progress": {
+    "completed_units": [
+      "aplicacao-e-navegacao",
+      "configuracoes-e-persistencia",
+      "trading-automatizado",
+      "estrategia-e-indicadores",
+      "integracoes-de-mercado",
+      "servico-em-background",
+      "patrocinadores-e-config-remota",
+      "dashboard-e-logs"
+    ],
+    "completed_files": 24,
+    "last_completed_at": "2026-06-05T05:06:59Z"
+  },
+  "gate_policy": {
+    "defaults_preapproved": [
+      "aprovar_plano_inicial",
+      "iniciar_scout",
+      "doc_level_essencial",
+      "aceitar_sugestao_scout_para_organizacao",
+      "continuar_checkpoints_rotineiros"
+    ],
+    "gatekeeper": "Subagente avalia gates nao cobertos; a execucao para apenas se houver REJECT.",
+    "policy_file": ".reversa/gatekeeper.md",
+    "known_current_state": [
+      ".reversa/version",
+      ".reversa/state.json",
+      ".reversa/config.toml",
+      ".reversa/plan.md",
+      ".reversa/gatekeeper.md",
+      ".reversa/context/",
+      "_reversa_sdd/"
+    ],
+    "last_gatekeeper_adjustment": "2026-06-05T04:49:44Z"
+  },
+  "created_files": [
+    ".reversa/version",
+    ".reversa/state.json",
+    ".reversa/config.toml",
+    ".reversa/plan.md",
+    ".reversa/gatekeeper.md",
+    "_reversa_sdd/inventory.md",
+    "_reversa_sdd/dependencies.md",
+    ".reversa/context/surface.json",
+    "_reversa_sdd/code-analysis.md",
+    ".reversa/context/modules.json",
+    "_reversa_sdd/domain.md",
+    "_reversa_sdd/state-machines.md",
+    "_reversa_sdd/architecture.md",
+    "_reversa_sdd/c4-context.md",
+    "_reversa_sdd/aplicacao-e-navegacao/requirements.md",
+    "_reversa_sdd/aplicacao-e-navegacao/design.md",
+    "_reversa_sdd/aplicacao-e-navegacao/tasks.md",
+    "_reversa_sdd/configuracoes-e-persistencia/requirements.md",
+    "_reversa_sdd/configuracoes-e-persistencia/design.md",
+    "_reversa_sdd/configuracoes-e-persistencia/tasks.md",
+    "_reversa_sdd/trading-automatizado/requirements.md",
+    "_reversa_sdd/trading-automatizado/design.md",
+    "_reversa_sdd/trading-automatizado/tasks.md",
+    "_reversa_sdd/estrategia-e-indicadores/requirements.md",
+    "_reversa_sdd/estrategia-e-indicadores/design.md",
+    "_reversa_sdd/estrategia-e-indicadores/tasks.md",
+    "_reversa_sdd/integracoes-de-mercado/requirements.md",
+    "_reversa_sdd/integracoes-de-mercado/design.md",
+    "_reversa_sdd/integracoes-de-mercado/tasks.md",
+    "_reversa_sdd/servico-em-background/requirements.md",
+    "_reversa_sdd/servico-em-background/design.md",
+    "_reversa_sdd/servico-em-background/tasks.md",
+    "_reversa_sdd/patrocinadores-e-config-remota/requirements.md",
+    "_reversa_sdd/patrocinadores-e-config-remota/design.md",
+    "_reversa_sdd/patrocinadores-e-config-remota/tasks.md",
+    "_reversa_sdd/dashboard-e-logs/requirements.md",
+    "_reversa_sdd/dashboard-e-logs/design.md",
+    "_reversa_sdd/dashboard-e-logs/tasks.md",
+    "_reversa_sdd/confidence-report.md",
+    "_reversa_sdd/questions.md"
+  ]
+}

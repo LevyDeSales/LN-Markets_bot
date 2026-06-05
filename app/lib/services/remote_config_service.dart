@@ -4,12 +4,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // URL of the bot-config.json served by the landing page server.
 // Update this to your production domain when you deploy.
-const kBotConfigUrl =
-    'https://bitfood.app/bot-config.json';
+const kBotConfigUrl = 'https://bitfood.app/bot-config.json';
 
 class RemoteExchange {
   final String id;
-  final bool   live;
+  final bool live;
   final String signupUrl;
 
   const RemoteExchange({
@@ -19,8 +18,8 @@ class RemoteExchange {
   });
 
   factory RemoteExchange.fromJson(Map<String, dynamic> j) => RemoteExchange(
-        id:        j['id']        as String,
-        live:      (j['live']     as bool?) ?? false,
+        id: j['id'] as String,
+        live: (j['live'] as bool?) ?? false,
         signupUrl: j['signupUrl'] as String? ?? '',
       );
 }
@@ -41,7 +40,7 @@ class RemoteConfigService {
   static Future<void> _loadCache() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw   = prefs.getString(_cacheKey);
+      final raw = prefs.getString(_cacheKey);
       if (raw != null) _parse(jsonDecode(raw) as Map<String, dynamic>);
     } catch (_) {}
   }

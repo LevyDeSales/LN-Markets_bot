@@ -15,14 +15,14 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   int _count = 5;
   late final AnimationController _barCtrl;
-  late final Animation<double>   _barAnim;
+  late final Animation<double> _barAnim;
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _barCtrl = AnimationController(
-        vsync: this, duration: const Duration(seconds: 5));
+    _barCtrl =
+        AnimationController(vsync: this, duration: const Duration(seconds: 5));
     _barAnim = Tween<double>(begin: 0, end: 1).animate(_barCtrl);
     _barCtrl.forward();
 
@@ -76,10 +76,10 @@ class _SplashScreenState extends State<SplashScreen>
                       color: AppColors.orange),
                 ),
                 const SizedBox(height: 4),
-                Text('v3.0  ·  by unknown_BTC_usr  ·  Made with ❤️ in Flutter with Claude',
+                const Text(
+                    'v3.0  ·  by unknown_BTC_usr  ·  Made with ❤️ in Flutter with Claude',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 10, color: AppColors.textMuted)),
+                    style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
 
                 const SizedBox(height: 36),
 
@@ -90,7 +90,7 @@ class _SplashScreenState extends State<SplashScreen>
                     color: const Color(0xFF0D2010),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                        color: AppColors.green.withOpacity(.3), width: 1),
+                        color: AppColors.green.withValues(alpha: .3), width: 1),
                   ),
                   child: Text(
                     t('splash_warning'),
@@ -108,8 +108,8 @@ class _SplashScreenState extends State<SplashScreen>
                 // ── Countdown ──
                 Text(
                   '${t('splash_start')} $_count ${t('splash_secs')}...',
-                  style: const TextStyle(
-                      fontSize: 13, color: AppColors.textMuted),
+                  style:
+                      const TextStyle(fontSize: 13, color: AppColors.textMuted),
                 ),
                 const SizedBox(height: 10),
 
@@ -122,7 +122,8 @@ class _SplashScreenState extends State<SplashScreen>
                       value: _barAnim.value,
                       minHeight: 6,
                       backgroundColor: AppColors.card,
-                      valueColor: const AlwaysStoppedAnimation(AppColors.orange),
+                      valueColor:
+                          const AlwaysStoppedAnimation(AppColors.orange),
                     ),
                   ),
                 ),

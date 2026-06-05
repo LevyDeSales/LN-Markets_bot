@@ -8,16 +8,16 @@ import '../services/remote_config_service.dart';
 // Exchange icon colours (approximate brand colours)
 const _exchangeColors = {
   'binance': Color(0xFFF0B90B),
-  'bingx':   Color(0xFF1DA1F2),
-  'bybit':   Color(0xFFFFB627),
-  'okx':     Color(0xFF000000),
+  'bingx': Color(0xFF1DA1F2),
+  'bybit': Color(0xFFFFB627),
+  'okx': Color(0xFF000000),
 };
 
 const _exchangeIcons = {
   'binance': Icons.currency_bitcoin,
-  'bingx':   Icons.bar_chart,
-  'bybit':   Icons.show_chart,
-  'okx':     Icons.layers_outlined,
+  'bingx': Icons.bar_chart,
+  'bybit': Icons.show_chart,
+  'okx': Icons.layers_outlined,
 };
 
 class SponsorsTab extends StatelessWidget {
@@ -36,9 +36,9 @@ class SponsorsTab extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-
           Text(t('partners_subtitle'),
-              style: const TextStyle(fontSize: 13, color: AppColors.textMuted, height: 1.5)),
+              style: const TextStyle(
+                  fontSize: 13, color: AppColors.textMuted, height: 1.5)),
           const SizedBox(height: 20),
 
           // ── Exchange partner slots ──────────────────────────────────────
@@ -51,9 +51,9 @@ class SponsorsTab extends StatelessWidget {
               final remote = RemoteConfigService.forId(ex.id);
               final merged = remote != null
                   ? Exchange(
-                      id:        ex.id,
-                      name:      ex.name,
-                      tagline:   ex.tagline,
+                      id: ex.id,
+                      name: ex.name,
+                      tagline: ex.tagline,
                       signupUrl: remote.signupUrl.isNotEmpty
                           ? remote.signupUrl
                           : ex.signupUrl,
@@ -61,8 +61,7 @@ class SponsorsTab extends StatelessWidget {
                     )
                   : ex;
               return _ExchangeCard(
-                  exchange: merged,
-                  onTap:    () => _open(merged.signupUrl));
+                  exchange: merged, onTap: () => _open(merged.signupUrl));
             }),
             const SizedBox(height: 10),
           ],
@@ -76,11 +75,14 @@ class SponsorsTab extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.panel,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.orange.withValues(alpha: .25)),
+              border:
+                  Border.all(color: AppColors.orange.withValues(alpha: .25)),
             ),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                const Icon(Icons.handshake_outlined, size: 20, color: AppColors.orange),
+                const Icon(Icons.handshake_outlined,
+                    size: 20, color: AppColors.orange),
                 const SizedBox(width: 8),
                 Text(t('partners_cta_title'),
                     style: const TextStyle(
@@ -120,15 +122,15 @@ class SponsorsTab extends StatelessWidget {
 }
 
 class _ExchangeCard extends StatelessWidget {
-  final Exchange     exchange;
+  final Exchange exchange;
   final VoidCallback onTap;
 
   const _ExchangeCard({required this.exchange, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final color  = _exchangeColors[exchange.id] ?? AppColors.orange;
-    final icon   = _exchangeIcons[exchange.id]  ?? Icons.open_in_new;
+    final color = _exchangeColors[exchange.id] ?? AppColors.orange;
+    final icon = _exchangeIcons[exchange.id] ?? Icons.open_in_new;
     final isLive = exchange.live;
 
     return InkWell(
@@ -140,9 +142,7 @@ class _ExchangeCard extends StatelessWidget {
           color: AppColors.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-              color: isLive
-                  ? color.withValues(alpha: .5)
-                  : AppColors.divider,
+              color: isLive ? color.withValues(alpha: .5) : AppColors.divider,
               width: isLive ? 1.5 : 1),
         ),
         child: Row(children: [
@@ -157,7 +157,8 @@ class _ExchangeCard extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
                 Text(exchange.name,
                     style: const TextStyle(
@@ -169,7 +170,8 @@ class _ExchangeCard extends StatelessWidget {
               ]),
               const SizedBox(height: 3),
               Text(exchange.tagline,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                  style: const TextStyle(
+                      fontSize: 11, color: AppColors.textMuted)),
             ]),
           ),
           Icon(Icons.chevron_right,

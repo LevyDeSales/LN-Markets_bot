@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "platformOrigin": "flutter-material",
+  "platformTarget": "flutter-macos",
+  "screens": [
+    {"id": "splash", "title": "Splash", "source": "app/lib/screens/splash_screen.dart", "mode": "modernizado"},
+    {"id": "home", "title": "Home Shell", "source": "app/lib/screens/home_screen.dart", "mode": "modernizado"},
+    {"id": "dashboard", "title": "Dashboard", "source": "app/lib/screens/dashboard_tab.dart", "mode": "modernizado"},
+    {"id": "settings", "title": "Settings", "source": "app/lib/screens/settings_tab.dart", "mode": "modernizado"},
+    {"id": "logs", "title": "Logs", "source": "app/lib/screens/logs_tab.dart", "mode": "modernizado"},
+    {"id": "sponsors", "title": "Sponsors", "source": "app/lib/screens/sponsors_tab.dart", "mode": "modernizado"},
+    {"id": "about", "title": "About", "source": "app/lib/screens/about_tab.dart", "mode": "modernizado"}
+  ]
+}

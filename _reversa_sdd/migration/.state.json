@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-06-05T00:00:00-03:00",
+  "engine": "codex",
+  "reversaVersion": "1.0.0",
+  "currentAgent": {
+    "agent": null,
+    "phase": null,
+    "status": "complete",
+    "topologyApproved": true,
+    "screenModeApproved": true
+  },
+  "completedAgents": [
+    "paradigm_advisor",
+    "curator",
+    "strategist",
+    "designer",
+    "screen_translator",
+    "inspector"
+  ],
+  "pendingAgents": [],
+  "lastCheckpoint": "handoff",
+  "decisions": {
+    "targetStack": "Flutter/Dart macOS ARM",
+    "scope": "Mac funcional",
+    "strategy": "parallel rebuild with entrypoint cutover",
+    "topology": "hybrid modular under app/lib/src",
+    "screenMode": "modernizado"
+  }
+}

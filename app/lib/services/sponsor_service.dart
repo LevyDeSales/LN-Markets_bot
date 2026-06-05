@@ -1,11 +1,11 @@
 const String kTelegramUrl = 'https://t.me/BrazilBelge';
 
 class Exchange {
-  final String   id;
-  final String   name;
-  final String   tagline;
-  final String   signupUrl;    // referral link (update when partnership is set)
-  final bool     live;         // true = link is a real referral, false = coming soon
+  final String id;
+  final String name;
+  final String tagline;
+  final String signupUrl; // referral link (update when partnership is set)
+  final bool live; // true = link is a real referral, false = coming soon
 
   const Exchange({
     required this.id,
@@ -22,32 +22,32 @@ class Exchange {
 class SponsorService {
   static const List<Exchange> exchanges = [
     Exchange(
-      id:        'binance',
-      name:      'Binance',
-      tagline:   'World\'s largest crypto exchange',
+      id: 'binance',
+      name: 'Binance',
+      tagline: 'World\'s largest crypto exchange',
       signupUrl: 'https://www.binance.com/en/register',
-      live:      false,
+      live: false,
     ),
     Exchange(
-      id:        'bingx',
-      name:      'BingX',
-      tagline:   'Copy-trading & futures platform',
+      id: 'bingx',
+      name: 'BingX',
+      tagline: 'Copy-trading & futures platform',
       signupUrl: 'https://bingx.com/en/register',
-      live:      false,
+      live: false,
     ),
     Exchange(
-      id:        'bybit',
-      name:      'Bybit',
-      tagline:   'Derivatives exchange — up to 100x leverage',
+      id: 'bybit',
+      name: 'Bybit',
+      tagline: 'Derivatives exchange — up to 100x leverage',
       signupUrl: 'https://www.bybit.com/en/register',
-      live:      false,
+      live: false,
     ),
     Exchange(
-      id:        'okx',
-      name:      'OKX',
-      tagline:   'Spot, futures & Web3 in one app',
+      id: 'okx',
+      name: 'OKX',
+      tagline: 'Spot, futures & Web3 in one app',
       signupUrl: 'https://www.okx.com/join',
-      live:      false,
+      live: false,
     ),
   ];
 

@@ -3,7 +3,7 @@ import '../i18n.dart';
 import '../services/settings_service.dart';
 import '../services/trader_service.dart';
 import '../services/log_service.dart';
-import '../services/foreground_service.dart';
+import '../src/platform/bot_runtime_controller.dart';
 import '../app_theme.dart';
 import '../widgets/sponsor_banner.dart';
 import 'dashboard_tab.dart';
@@ -14,14 +14,20 @@ import 'about_tab.dart';
 
 class HomeScreen extends StatefulWidget {
   final SettingsService settings;
-  final TraderService   traderService;
-  final LogService      logService;
+  final TraderService traderService;
+  final LogService logService;
+  final BotRuntimeController runtimeController;
+  final bool showSponsorBanner;
+  final bool enableExternalEffects;
 
   const HomeScreen({
     super.key,
     required this.settings,
     required this.traderService,
     required this.logService,
+    required this.runtimeController,
+    this.showSponsorBanner = true,
+    this.enableExternalEffects = true,
   });
 
   @override
@@ -38,24 +44,29 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     if (!widget.settings.hasCredentials) _tab = 1;
-    widget.traderService.fetchPriceOnce();
-    Future.delayed(const Duration(seconds: 2),
-        () => ForegroundService.requestBatteryOptimization());
+    if (widget.enableExternalEffects) {
+      widget.traderService.fetchPriceOnce();
+      Future.delayed(const Duration(seconds: 2),
+          () => widget.runtimeController.requestBatteryOptimization());
+    }
   }
 
   void _onTab(int i) => setState(() => _tab = i);
 
   List<Widget> get _pages => [
-    DashboardTab(traderService: widget.traderService),
-    SettingsTab(
-      settings:      widget.settings,
-      traderService: widget.traderService,
-      onSaved:       () => setState(() {}),
-    ),
-    LogsTab(logService: widget.logService),
-    const SponsorsTab(),
-    const AboutTab(),
-  ];
+        DashboardTab(
+          traderService: widget.traderService,
+          showMarketIndicators: widget.enableExternalEffects,
+        ),
+        SettingsTab(
+          settings: widget.settings,
+          traderService: widget.traderService,
+          onSaved: () => setState(() {}),
+        ),
+        LogsTab(logService: widget.logService),
+        const SponsorsTab(),
+        const AboutTab(),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -73,12 +84,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: Column(children: [
         Expanded(child: IndexedStack(index: _tab, children: _pages)),
-        const SponsorBanner(),
+        if (widget.showSponsorBanner) const SponsorBanner(),
       ]),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _tab,
-        onTap:        _onTab,
-        items:        _navItems(),
+        onTap: _onTab,
+        items: _navItems(),
       ),
     );
   }
@@ -88,7 +99,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _desktopLayout() {
     return Scaffold(
       body: Row(children: [
-
         // Sidebar
         Container(
           width: 200,
@@ -116,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Spacer(),
               const Divider(color: AppColors.divider, height: 1),
               // Sponsor banner in sidebar footer
-              const SponsorBanner(),
+              if (widget.showSponsorBanner) const SponsorBanner(),
               const SizedBox(height: 8),
             ],
           ),
@@ -142,10 +152,10 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
     final icons = [
       [Icons.dashboard_outlined, Icons.dashboard],
-      [Icons.settings_outlined,  Icons.settings],
-      [Icons.list_alt_outlined,  Icons.list_alt],
+      [Icons.settings_outlined, Icons.settings],
+      [Icons.list_alt_outlined, Icons.list_alt],
       [Icons.handshake_outlined, Icons.handshake],
-      [Icons.info_outline,       Icons.info],
+      [Icons.info_outline, Icons.info],
     ];
 
     return List.generate(labels.length, (i) {
@@ -168,12 +178,16 @@ class _HomeScreenState extends State<HomeScreen> {
               color: active ? AppColors.orange : AppColors.textMuted,
             ),
             const SizedBox(width: 12),
-            Text(
-              labels[i],
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: active ? FontWeight.bold : FontWeight.normal,
-                  color: active ? AppColors.orange : AppColors.textMuted),
+            Expanded(
+              child: Text(
+                labels[i],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                    color: active ? AppColors.orange : AppColors.textMuted),
+              ),
             ),
           ]),
         ),
@@ -182,30 +196,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<BottomNavigationBarItem> _navItems() => [
-    BottomNavigationBarItem(
-      icon:       const Icon(Icons.dashboard_outlined),
-      activeIcon: const Icon(Icons.dashboard),
-      label:      t('nav_dashboard'),
-    ),
-    BottomNavigationBarItem(
-      icon:       const Icon(Icons.settings_outlined),
-      activeIcon: const Icon(Icons.settings),
-      label:      t('nav_settings'),
-    ),
-    BottomNavigationBarItem(
-      icon:       const Icon(Icons.list_alt_outlined),
-      activeIcon: const Icon(Icons.list_alt),
-      label:      t('nav_logs'),
-    ),
-    BottomNavigationBarItem(
-      icon:       const Icon(Icons.handshake_outlined),
-      activeIcon: const Icon(Icons.handshake),
-      label:      t('nav_sponsors'),
-    ),
-    BottomNavigationBarItem(
-      icon:       const Icon(Icons.info_outline),
-      activeIcon: const Icon(Icons.info),
-      label:      t('nav_about'),
-    ),
-  ];
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.dashboard_outlined),
+          activeIcon: const Icon(Icons.dashboard),
+          label: t('nav_dashboard'),
+        ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.settings_outlined),
+          activeIcon: const Icon(Icons.settings),
+          label: t('nav_settings'),
+        ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.list_alt_outlined),
+          activeIcon: const Icon(Icons.list_alt),
+          label: t('nav_logs'),
+        ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.handshake_outlined),
+          activeIcon: const Icon(Icons.handshake),
+          label: t('nav_sponsors'),
+        ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.info_outline),
+          activeIcon: const Icon(Icons.info),
+          label: t('nav_about'),
+        ),
+      ];
 }

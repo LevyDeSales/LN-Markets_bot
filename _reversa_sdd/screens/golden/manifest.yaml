@@ -1,0 +1,6 @@
+schemaVersion: 1
+status: pending-manual-capture
+normalizationRules:
+  - ignore-clock
+  - ignore-live-market-price
+screens: []

@@ -1,0 +1,33 @@
+[project]
+name = "LN Markets Bot"
+repository = "https://github.com/LevyDeSales/LN-Markets_bot.git"
+root = "."
+
+[user]
+name = "Levy"
+chat_language = "pt-br"
+doc_language = "Português"
+answer_mode = "chat"
+
+[output]
+folder = "_reversa_sdd"
+
+[agents]
+sequence = ["scout", "archaeologist", "detective", "architect", "writer", "reviewer"]
+
+[analysis]
+primary_app_hint = "app/"
+notes = "A raiz contem fontes Flutter legadas e app/ contem o projeto Flutter gerado mais atual; analisar a raiz inteira e tratar app/ como aplicacao principal atual quando houver divergencia."
+
+[gates]
+defaults_preapproved = ["initial_plan", "start_scout", "doc_level_essencial", "accept_scout_organization", "routine_continue"]
+gatekeeper_required_for_uncovered = true
+policy_file = ".reversa/gatekeeper.md"
+known_current_state = [".reversa/version", ".reversa/state.json", ".reversa/config.toml", ".reversa/plan.md", ".reversa/gatekeeper.md", ".reversa/context/", "_reversa_sdd/"]
+
+[specs]
+layout = "feature-folder"
+granularity = "feature"
+custom_folders = []
+scout_suggestion = "feature"
+decided_at = "2026-06-05T04:54:42Z"

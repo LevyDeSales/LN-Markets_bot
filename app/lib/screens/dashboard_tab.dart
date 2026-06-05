@@ -7,7 +7,13 @@ import '../services/market_data_service.dart';
 
 class DashboardTab extends StatelessWidget {
   final TraderService traderService;
-  const DashboardTab({super.key, required this.traderService});
+  final bool showMarketIndicators;
+
+  const DashboardTab({
+    super.key,
+    required this.traderService,
+    this.showMarketIndicators = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +24,10 @@ class DashboardTab extends StatelessWidget {
   }
 
   Widget _build(BuildContext context) {
-    final tr     = traderService;
-    final trend  = tr.lastTrend;
-    final pos    = tr.position;
-    final stats  = tr.stats;
+    final tr = traderService;
+    final trend = tr.lastTrend;
+    final pos = tr.position;
+    final stats = tr.stats;
     final signal = trend?.signal;
 
     return Scaffold(
@@ -38,23 +44,24 @@ class DashboardTab extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(12),
         child: Column(children: [
-
           // ── Status bar ──────────────────────────────────────────────────
           _StatusBar(traderService: tr),
           const SizedBox(height: 10),
 
           // ── Linha 1: Preço + Saldo ───────────────────────────────────────
           Row(children: [
-            Expanded(child: _InfoCard(
+            Expanded(
+                child: _InfoCard(
               label: t('dash_price'),
               value: tr.btcPrice > 0
                   ? '\$ ${_fmt(tr.btcPrice, decimals: 2)}'
                   : '—',
             )),
             const SizedBox(width: 10),
-            Expanded(child: _InfoCard(
-              label:      t('dash_balance'),
-              value:      '${_fmtInt(tr.balance)} ${t('dash_sats')}',
+            Expanded(
+                child: _InfoCard(
+              label: t('dash_balance'),
+              value: '${_fmtInt(tr.balance)} ${t('dash_sats')}',
               valueColor: AppColors.orange,
             )),
           ]),
@@ -72,9 +79,11 @@ class DashboardTab extends StatelessWidget {
           _StatsCard(stats: stats, runtime: tr.runtimeSecs),
           const SizedBox(height: 12),
 
-          // ── Indicadores de mercado ────────────────────────────────────────
-          const _MarketIndicatorsCard(),
-          const SizedBox(height: 12),
+          if (showMarketIndicators) ...[
+            // ── Indicadores de mercado ────────────────────────────────────────
+            const _MarketIndicatorsCard(),
+            const SizedBox(height: 12),
+          ],
         ]),
       ),
     );
@@ -92,7 +101,7 @@ class DashboardTab extends StatelessWidget {
 
 // ── Status dot (AppBar) ───────────────────────────────────────────────────────
 class _StatusDot extends StatelessWidget {
-  final bool    running;
+  final bool running;
   final String? signal;
   const _StatusDot({required this.running, this.signal});
 
@@ -120,7 +129,7 @@ class _StatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final running = traderService.running;
-    final signal  = traderService.lastTrend?.signal;
+    final signal = traderService.lastTrend?.signal;
 
     Color barColor;
     String barLabel;
@@ -129,19 +138,19 @@ class _StatusBar extends StatelessWidget {
     if (!running) {
       barColor = AppColors.red;
       barLabel = t('dash_stopped');
-      barIcon  = Icons.stop_circle_outlined;
+      barIcon = Icons.stop_circle_outlined;
     } else if (signal == 'long') {
       barColor = AppColors.green;
       barLabel = '${t('dash_running')}  ·  ${t('dash_long')}';
-      barIcon  = Icons.arrow_upward;
+      barIcon = Icons.arrow_upward;
     } else if (signal == 'short') {
       barColor = AppColors.red;
       barLabel = '${t('dash_running')}  ·  ${t('dash_short')}';
-      barIcon  = Icons.arrow_downward;
+      barIcon = Icons.arrow_downward;
     } else {
       barColor = AppColors.yellow;
       barLabel = t('dash_running');
-      barIcon  = Icons.radio_button_checked;
+      barIcon = Icons.radio_button_checked;
     }
 
     return Container(
@@ -149,7 +158,7 @@ class _StatusBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.panel,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: barColor.withOpacity(.4)),
+        border: Border.all(color: barColor.withValues(alpha: .4)),
       ),
       child: Row(children: [
         Icon(barIcon, color: barColor, size: 22),
@@ -157,9 +166,7 @@ class _StatusBar extends StatelessWidget {
         Expanded(
           child: Text(barLabel,
               style: TextStyle(
-                  color: barColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold)),
+                  color: barColor, fontSize: 14, fontWeight: FontWeight.bold)),
         ),
         SizedBox(
           width: 140,
@@ -172,9 +179,9 @@ class _StatusBar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8)),
             ),
             icon: Icon(running ? Icons.pause : Icons.play_arrow, size: 18),
-            label: Text(
-                running ? t('dash_stop') : t('dash_start'),
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            label: Text(running ? t('dash_stop') : t('dash_start'),
+                style:
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
             onPressed: () {
               if (running) {
                 traderService.stop();
@@ -192,7 +199,7 @@ class _StatusBar extends StatelessWidget {
 // ── Card genérico de info ─────────────────────────────────────────────────────
 class _InfoCard extends StatelessWidget {
   final String label, value;
-  final Color  valueColor;
+  final Color valueColor;
   const _InfoCard({
     required this.label,
     required this.value,
@@ -227,22 +234,22 @@ class _TrendCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final signal = trend?.signal as String?;
-    Color  bgColor;
-    Color  sigColor;
+    Color bgColor;
+    Color sigColor;
     String sigText;
 
     if (signal == 'long') {
-      bgColor  = AppColors.cardLong;
+      bgColor = AppColors.cardLong;
       sigColor = AppColors.green;
-      sigText  = t('dash_long');
+      sigText = t('dash_long');
     } else if (signal == 'short') {
-      bgColor  = AppColors.cardShort;
+      bgColor = AppColors.cardShort;
       sigColor = AppColors.red;
-      sigText  = t('dash_short');
+      sigText = t('dash_short');
     } else {
-      bgColor  = AppColors.card;
+      bgColor = AppColors.card;
       sigColor = AppColors.yellow;
-      sigText  = t('dash_neutral');
+      sigText = t('dash_neutral');
     }
 
     return Container(
@@ -258,12 +265,12 @@ class _TrendCard extends StatelessWidget {
                 fontSize: 18, fontWeight: FontWeight.bold, color: sigColor)),
         const SizedBox(height: 8),
         if (trend != null) ...[
-          _emaRow('EMA fast',   '${trend!.emaFast}'),
-          _emaRow('EMA slow',   '${trend!.emaSlow}'),
+          _emaRow('EMA fast', '${trend!.emaFast}'),
+          _emaRow('EMA slow', '${trend!.emaSlow}'),
           _emaRow('EMA signal', '${trend!.emaSignal}'),
         ] else ...[
-          _emaRow('EMA fast',   '—'),
-          _emaRow('EMA slow',   '—'),
+          _emaRow('EMA fast', '—'),
+          _emaRow('EMA slow', '—'),
           _emaRow('EMA signal', '—'),
         ],
       ]),
@@ -289,16 +296,16 @@ class _PositionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasPos = position?.hasPosition == true;
-    final side   = position?.side as String?;
-    Color  bg    = hasPos
+    final side = position?.side as String?;
+    Color bg = hasPos
         ? (side == 'long' ? AppColors.cardLong : AppColors.cardShort)
         : AppColors.card;
-    Color  sideColor = side == 'long' ? AppColors.green : AppColors.red;
+    Color sideColor = side == 'long' ? AppColors.green : AppColors.red;
 
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-          color: bg, borderRadius: BorderRadius.circular(12)),
+      decoration:
+          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(t('dash_position'),
             style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
@@ -344,7 +351,7 @@ class _PositionCard extends StatelessWidget {
 // ── Stats ─────────────────────────────────────────────────────────────────────
 class _StatsCard extends StatelessWidget {
   final dynamic stats;
-  final int     runtime;
+  final int runtime;
   const _StatsCard({required this.stats, required this.runtime});
 
   static Color _pnlColor(int v) =>
@@ -365,13 +372,13 @@ class _StatsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final total     = stats?.totalTrades   ?? 0;
-    final longs     = stats?.longTrades    ?? 0;
-    final shorts    = stats?.shortTrades   ?? 0;
-    final realized  = stats?.netPnlSats    ?? 0;
+    final total = stats?.totalTrades ?? 0;
+    final longs = stats?.longTrades ?? 0;
+    final shorts = stats?.shortTrades ?? 0;
+    final realized = stats?.netPnlSats ?? 0;
     final unrealized = stats?.unrealizedPnl ?? 0;
-    final totalPnl  = stats?.totalPnl      ?? 0;
-    final hasData   = runtime > 0;
+    final totalPnl = stats?.totalPnl ?? 0;
+    final hasData = runtime > 0;
 
     return Card(
       child: Padding(
@@ -386,22 +393,21 @@ class _StatsCard extends StatelessWidget {
 
           // Linha 1: contadores
           Row(children: [
-            _mini(t('stats_total'),   '$total',              AppColors.textMain),
-            _mini(t('stats_longs'),   '$longs',              AppColors.green),
-            _mini(t('stats_shorts'),  '$shorts',             AppColors.red),
-            _mini(t('stats_runtime'), _fmtRuntime(runtime),  AppColors.textMain),
+            _mini(t('stats_total'), '$total', AppColors.textMain),
+            _mini(t('stats_longs'), '$longs', AppColors.green),
+            _mini(t('stats_shorts'), '$shorts', AppColors.red),
+            _mini(t('stats_runtime'), _fmtRuntime(runtime), AppColors.textMain),
           ]),
           const Divider(color: AppColors.divider, height: 16),
 
           // Linha 2: P&L
           Row(children: [
-            _mini(t('stats_pnl_realized'),
-                '${_pnlTxt(realized, hasData)} sats',
+            _mini(t('stats_pnl_realized'), '${_pnlTxt(realized, hasData)} sats',
                 hasData ? _pnlColor(realized) : AppColors.textMuted),
-            _mini(t('stats_pnl_open'),
-                '${_pnlTxt(unrealized, hasData)} sats',
+            _mini(t('stats_pnl_open'), '${_pnlTxt(unrealized, hasData)} sats',
                 hasData ? _pnlColor(unrealized) : AppColors.yellow),
-            Expanded(child: _miniWidget(
+            Expanded(
+                child: _miniWidget(
               t('stats_pnl_total'),
               '${_pnlTxt(totalPnl, hasData)} sats',
               hasData ? _pnlColor(totalPnl) : AppColors.yellow,
@@ -438,9 +444,9 @@ class _MarketIndicatorsCard extends StatefulWidget {
 }
 
 class _MarketIndicatorsCardState extends State<_MarketIndicatorsCard> {
-  MarketData _data    = MarketData.empty();
-  bool       _loading = true;
-  Timer?     _timer;
+  MarketData _data = MarketData.empty();
+  bool _loading = true;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -457,7 +463,12 @@ class _MarketIndicatorsCardState extends State<_MarketIndicatorsCard> {
 
   Future<void> _fetch() async {
     final d = await MarketDataService.fetch();
-    if (mounted) setState(() { _data = d; _loading = false; });
+    if (mounted) {
+      setState(() {
+        _data = d;
+        _loading = false;
+      });
+    }
   }
 
   // Fear & Greed colour
@@ -511,35 +522,36 @@ class _MarketIndicatorsCardState extends State<_MarketIndicatorsCard> {
         else
           Row(children: [
             // Fear & Greed
-            Expanded(child: _indicatorCell(
-              icon:  Icons.mood,
+            Expanded(
+                child: _indicatorCell(
+              icon: Icons.mood,
               label: t('market_fg'),
               value: _data.fearGreedValue != null
                   ? '${_data.fearGreedValue}'
                   : '—',
-              sub:   _data.fearGreedLabel ?? '',
+              sub: _data.fearGreedLabel ?? '',
               color: _fgColor(_data.fearGreedValue),
             )),
             _vDivider(),
             // Hashrate
-            Expanded(child: _indicatorCell(
-              icon:  Icons.memory,
+            Expanded(
+                child: _indicatorCell(
+              icon: Icons.memory,
               label: t('market_hashrate'),
-              value: _data.hashrateEh != null
-                  ? '${_data.hashrateEh!.toStringAsFixed(1)}'
-                  : '—',
-              sub:   'EH/s',
+              value: _data.hashrateEh?.toStringAsFixed(1) ?? '—',
+              sub: 'EH/s',
               color: AppColors.orange,
             )),
             _vDivider(),
             // BTC Dominance
-            Expanded(child: _indicatorCell(
-              icon:  Icons.pie_chart_outline,
+            Expanded(
+                child: _indicatorCell(
+              icon: Icons.pie_chart_outline,
               label: t('market_dominance'),
               value: _data.btcDominance != null
                   ? '${_data.btcDominance!.toStringAsFixed(1)}%'
                   : '—',
-              sub:   'BTC.D',
+              sub: 'BTC.D',
               color: const Color(0xFFF7931A),
             )),
           ]),
@@ -549,10 +561,10 @@ class _MarketIndicatorsCardState extends State<_MarketIndicatorsCard> {
 
   Widget _indicatorCell({
     required IconData icon,
-    required String   label,
-    required String   value,
-    required String   sub,
-    required Color    color,
+    required String label,
+    required String value,
+    required String sub,
+    required Color color,
   }) =>
       Column(children: [
         Icon(icon, size: 18, color: color),
@@ -571,8 +583,10 @@ class _MarketIndicatorsCardState extends State<_MarketIndicatorsCard> {
       ]);
 
   Widget _vDivider() => Container(
-        width: 1, height: 60, color: AppColors.divider,
-        margin: const EdgeInsets.symmetric(horizontal: 8));
+      width: 1,
+      height: 60,
+      color: AppColors.divider,
+      margin: const EdgeInsets.symmetric(horizontal: 8));
 
   static String _fmtTime(DateTime dt) {
     final h = dt.hour.toString().padLeft(2, '0');

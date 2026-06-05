@@ -11,22 +11,24 @@ class BinanceAPI {
 
   Future<List<Candle>> fetchCandles(String interval, int limit) async {
     final url = Uri.parse('$_base/api/v3/klines').replace(queryParameters: {
-      'symbol':   'BTCUSDT',
+      'symbol': 'BTCUSDT',
       'interval': interval,
-      'limit':    '$limit',
+      'limit': '$limit',
     });
     final resp = await http.get(url).timeout(const Duration(seconds: 10));
     if (resp.statusCode != 200) {
       throw Exception('Binance error ${resp.statusCode}');
     }
     final raw = jsonDecode(resp.body) as List;
-    return raw.map((c) => Candle(
-      double.parse(c[1].toString()),
-      double.parse(c[2].toString()),
-      double.parse(c[3].toString()),
-      double.parse(c[4].toString()),
-      double.parse(c[5].toString()),
-    )).toList();
+    return raw
+        .map((c) => Candle(
+              double.parse(c[1].toString()),
+              double.parse(c[2].toString()),
+              double.parse(c[3].toString()),
+              double.parse(c[4].toString()),
+              double.parse(c[5].toString()),
+            ))
+        .toList();
   }
 
   Future<double> fetchPrice() async {
