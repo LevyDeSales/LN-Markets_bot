@@ -6,12 +6,17 @@
 - Xcode external path validated: `/Volumes/SSD-500GB-1/Applications/Xcode.app/Contents/Developer`
 - Xcode version: `26.5` build `17F42`
 - CocoaPods: `1.16.2`
-- macOS device is visible to Flutter when `DEVELOPER_DIR` is set.
-- `flutter build macos --debug` was not run because Xcode first launch is still blocked by a local CoreDevice/DDI install issue.
+- Global `xcode-select` now points to the external Xcode path.
+- macOS device is visible to Flutter.
+- `flutter analyze` passes.
+- `flutter test` passes with 25 tests.
+- `flutter build macos --debug --dart-define=LNMBOT_MOCK_MODE=true` still does not complete: Xcode's `SWBBuildService` hangs while running `clang -v -E -dM ... /dev/null`.
 - `setup.sh` has been made safe: it now works directly in `app/` and no longer copies root-level legacy sources over the migrated app.
 - New settings default to `testnet`.
 - Mock mode uses an isolated `mock_bot_position` storage key, so it does not clear a live `bot_position`.
 - Swift Package Manager is disabled for this Flutter app in `app/pubspec.yaml` with `flutter.config.enable-swift-package-manager: false`; current plugins are CocoaPods-based and Flutter's SPM integration failed while resolving dependencies.
+- `pod install` generated macOS CocoaPods integration in `app/macos/Runner.xcodeproj/project.pbxproj`, `app/macos/Runner.xcworkspace/contents.xcworkspacedata`, and `app/macos/Podfile.lock`.
+- The working local path for macOS builds is now `/Users/levy/Developer/LNbot/LN-Markets_bot`. The iCloud Drive path can trigger File Provider extended attributes that break macOS codesigning.
 
 ## Xcode First Launch Issue
 
@@ -59,18 +64,62 @@ pkgutil --pkg-info com.apple.pkg.XcodeSystemResources
 # version: 16.2.0.0.1.1733547573
 ```
 
-The Xcode tool lookup remains unhealthy:
+The original Xcode tool lookup was unhealthy:
 
 ```bash
 xcodebuild -find simctl
 xcodebuild -sdk /Volumes/SSD-500GB-1/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -find clang
 ```
 
-Both commands hang. As a result:
+Both commands hung at that time. After Levy opened/fixed Xcode, the basic lookup is now healthy:
+
+```bash
+xcode-select -p
+# /Volumes/SSD-500GB-1/Applications/Xcode.app/Contents/Developer
+
+xcodebuild -version
+# Xcode 26.5
+# Build version 17F42
+
+xcodebuild -find clang
+# /Volumes/SSD-500GB-1/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+
+xcodebuild -find simctl
+# /Volumes/SSD-500GB-1/Applications/Xcode.app/Contents/Developer/usr/bin/simctl
+```
+
+`flutter devices` now returns macOS and Chrome. `flutter doctor -v` still reports:
+
+```text
+[!] Xcode - develop for iOS and macOS (Xcode 26.5)
+    ✗ Unable to get list of installed Simulator runtimes.
+```
+
+This simulator runtime issue does not explain Dart tests, but it may be related to the remaining Xcode build-service problem.
+
+Old impact before the fix:
 
 - `flutter devices` hangs in `xcodebuild -find simctl`.
 - `flutter test` can hang in `xcodebuild -find clang`.
 - `flutter build macos --debug --dart-define=LNMBOT_MOCK_MODE=true` reaches Xcode/SPM setup, then cannot complete while Xcode lookup is unhealthy.
+
+Current remaining impact:
+
+- `flutter build macos --debug --dart-define=LNMBOT_MOCK_MODE=true` reaches `Building macOS application...`.
+- The child `xcodebuild` process starts `SWBBuildService`.
+- `SWBBuildService` starts two `clang -v -E -dM ... /dev/null` commands.
+- The build then hangs until interrupted.
+- Running an equivalent `clang -v -E -dM ... /dev/null` directly completes, so the current blocker is inside Xcode/SwiftBuild orchestration rather than the Dart code or `clang` itself.
+
+After moving/copying the project out of iCloud Drive to `/Users/levy/Developer/LNbot/LN-Markets_bot`, this blocker no longer reproduces.
+
+The iCloud path later reached codesign but failed with:
+
+```text
+resource fork, Finder information, or similar detritus not allowed
+```
+
+The failing app bundle had `com.apple.FinderInfo`, `com.apple.fileprovider.fpfs#P`, and `com.apple.provenance` attributes from File Provider/iCloud. Building from the local path avoids those attributes.
 
 ## Completed Checks
 
@@ -93,33 +142,66 @@ jq empty _reversa_sdd/migration/.state.json _reversa_sdd/screens/inventory.json 
 
 All commands above passed. `flutter test` passed with 25 tests.
 
+On 2026-06-06, after Xcode was opened and selected globally:
+
+```bash
+flutter devices
+flutter doctor -v
+flutter analyze
+flutter test
+flutter build macos --debug --dart-define=LNMBOT_MOCK_MODE=true
+```
+
+Results:
+
+- `flutter devices`: passed; macOS and Chrome visible.
+- `flutter doctor -v`: Flutter, CocoaPods, Chrome, connected macOS device, and network resources are usable; Android SDK is absent; Xcode cannot list installed simulator runtimes.
+- `flutter analyze`: passed with no issues.
+- `flutter test`: passed with 25 tests.
+- `flutter build macos --debug --dart-define=LNMBOT_MOCK_MODE=true`: blocked by the `SWBBuildService` / `clang -v -E -dM` hang described above.
+
+On 2026-06-06, from `/Users/levy/Developer/LNbot/LN-Markets_bot/app`:
+
+```bash
+flutter pub get
+pod install
+flutter analyze
+flutter test
+flutter build macos --debug --dart-define=LNMBOT_MOCK_MODE=true
+```
+
+Results:
+
+- `flutter analyze`: passed with no issues.
+- `flutter test`: passed with 25 tests.
+- `flutter build macos --debug --dart-define=LNMBOT_MOCK_MODE=true`: passed and produced `build/macos/Build/Products/Debug/lnmarkets_bot.app`.
+
 ## Levy Action Required
 
-Run these commands locally with your password if the stuck PIDs are still present:
+No `flutter build macos`, `xcodebuild`, `SWBBuildService`, or stuck `clang -v -E -dM` process was left running after the 2026-06-06 validation.
+
+If build hangs again, inspect and stop only the active build processes:
 
 ```bash
-ps -p 36894,36897 -o pid,user,ppid,stat,etime,command
-sudo kill 36897 36894
-ps -p 36894,36897 -o pid,user,ppid,stat,etime,command
+ps -axo pid,ppid,stat,etime,command | rg "flutter build macos|xcodebuild .*Runner.xcworkspace|SWBBuildService|clang -v -E -dM"
 ```
 
-Then retry first launch:
+Next practical local checks:
 
 ```bash
-sudo xcodebuild -runFirstLaunch
+xcodebuild -runFirstLaunch
+xcrun simctl list runtimes
+open app/macos/Runner.xcworkspace
 ```
 
-After it returns, verify the receipt and lookup commands:
+Then build once from Xcode's GUI to surface any hidden first-launch, signing, runtime, or SDK prompt that CLI output is not exposing. Keep mock mode for CLI smoke builds:
 
 ```bash
-pkgutil --pkg-info com.apple.pkg.XcodeSystemResources
-xcodebuild -find clang
-xcodebuild -find simctl
+cd app
+flutter build macos --debug --dart-define=LNMBOT_MOCK_MODE=true
 ```
 
-The receipt should no longer show the old `16.2...` version, and both `xcodebuild -find ...` commands should return paths quickly. If `devicectl manage ddis update` hangs again for several minutes, stop there and inspect the same two-process pattern before retrying. Do not stack repeated `runFirstLaunch` attempts while an old root `devicectl` is still alive.
-
-Already completed:
+Already completed by Levy:
 
 ```bash
 sudo xcode-select --switch /Volumes/SSD-500GB-1/Applications/Xcode.app/Contents/Developer
