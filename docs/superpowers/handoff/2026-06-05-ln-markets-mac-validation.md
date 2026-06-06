@@ -11,6 +11,7 @@
 - `setup.sh` has been made safe: it now works directly in `app/` and no longer copies root-level legacy sources over the migrated app.
 - New settings default to `testnet`.
 - Mock mode uses an isolated `mock_bot_position` storage key, so it does not clear a live `bot_position`.
+- Swift Package Manager is disabled for this Flutter app in `app/pubspec.yaml` with `flutter.config.enable-swift-package-manager: false`; current plugins are CocoaPods-based and Flutter's SPM integration failed while resolving dependencies.
 
 ## Xcode First Launch Issue
 
@@ -51,6 +52,26 @@ After the failed installer run, these root processes were still alive:
 
 The package payload did copy fresh CandidateDDIs under `/Library/Developer/CoreDevice/CandidateDDIs`, but the `devicectl manage ddis update` step is hung. Do not retry `xcodebuild -runFirstLaunch` while these PIDs are still active.
 
+After Levy cleared the orphaned processes, the old PIDs were gone and the selector still pointed to Xcode 26.5, but the system package receipt was still old:
+
+```bash
+pkgutil --pkg-info com.apple.pkg.XcodeSystemResources
+# version: 16.2.0.0.1.1733547573
+```
+
+The Xcode tool lookup remains unhealthy:
+
+```bash
+xcodebuild -find simctl
+xcodebuild -sdk /Volumes/SSD-500GB-1/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -find clang
+```
+
+Both commands hang. As a result:
+
+- `flutter devices` hangs in `xcodebuild -find simctl`.
+- `flutter test` can hang in `xcodebuild -find clang`.
+- `flutter build macos --debug --dart-define=LNMBOT_MOCK_MODE=true` reaches Xcode/SPM setup, then cannot complete while Xcode lookup is unhealthy.
+
 ## Completed Checks
 
 From `app/`:
@@ -88,7 +109,15 @@ Then retry first launch:
 sudo xcodebuild -runFirstLaunch
 ```
 
-If `devicectl manage ddis update` hangs again for several minutes, stop there and inspect the same two-process pattern before retrying. Do not stack repeated `runFirstLaunch` attempts while an old root `devicectl` is still alive.
+After it returns, verify the receipt and lookup commands:
+
+```bash
+pkgutil --pkg-info com.apple.pkg.XcodeSystemResources
+xcodebuild -find clang
+xcodebuild -find simctl
+```
+
+The receipt should no longer show the old `16.2...` version, and both `xcodebuild -find ...` commands should return paths quickly. If `devicectl manage ddis update` hangs again for several minutes, stop there and inspect the same two-process pattern before retrying. Do not stack repeated `runFirstLaunch` attempts while an old root `devicectl` is still alive.
 
 Already completed:
 
