@@ -72,5 +72,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build macOS debug app in mock mode
-        run: flutter build macos --debug --dart-define=LNMBOT_MOCK_MODE=true
+      - name: Generate macOS build configuration
+        run: flutter build macos --debug --config-only --dart-define=LNMBOT_MOCK_MODE=true
+
+      - name: Build macOS debug app in mock mode without signing
+        run: >
+          xcodebuild
+          -workspace macos/Runner.xcworkspace
+          -scheme Runner
+          -configuration Debug
+          -destination 'platform=macOS'
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGN_IDENTITY=-
+          build
