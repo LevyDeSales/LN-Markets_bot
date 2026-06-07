@@ -5,7 +5,10 @@ import '../src/trading/lnmarkets_signer.dart';
 
 class LNMarketsAPI {
   final SettingsService settings;
-  LNMarketsAPI(this.settings);
+  final http.Client _client;
+
+  LNMarketsAPI(this.settings, {http.Client? client})
+      : _client = client ?? http.Client();
 
   // ── Autenticação HMAC-SHA256 ──────────────────────────────────────────────
 
@@ -41,7 +44,7 @@ class LNMarketsAPI {
     final headers = _authHeaders('GET', path, params: qs);
     final url =
         Uri.parse('${settings.baseUrl}$path${qs.isNotEmpty ? '?$qs' : ''}');
-    final resp = await http
+    final resp = await _client
         .get(url, headers: headers)
         .timeout(const Duration(seconds: 15));
     return _parse(resp);
@@ -54,8 +57,21 @@ class LNMarketsAPI {
       'Content-Type': 'application/json',
     };
     final url = Uri.parse('${settings.baseUrl}$path');
-    final resp = await http
+    final resp = await _client
         .post(url, headers: headers, body: bodyStr)
+        .timeout(const Duration(seconds: 15));
+    return _parse(resp);
+  }
+
+  Future<dynamic> _put(String path, Map<String, dynamic> body) async {
+    final bodyStr = jsonEncode(body);
+    final headers = {
+      ..._authHeaders('PUT', path, params: bodyStr),
+      'Content-Type': 'application/json',
+    };
+    final url = Uri.parse('${settings.baseUrl}$path');
+    final resp = await _client
+        .put(url, headers: headers, body: bodyStr)
         .timeout(const Duration(seconds: 15));
     return _parse(resp);
   }
@@ -95,11 +111,11 @@ class LNMarketsAPI {
       (await _post('/v3/futures/isolated/trade/close', {'id': id}))
           as Map<String, dynamic>;
 
-  Future<void> setTakeProfit(String id, double price) async => await _post(
-      '/v3/futures/isolated/trade/takeprofit', {'id': id, 'takeprofit': price});
+  Future<void> setTakeProfit(String id, double price) async => await _put(
+      '/v3/futures/isolated/trade/takeprofit', {'id': id, 'value': price});
 
-  Future<void> setStopLoss(String id, double price) async => await _post(
-      '/v3/futures/isolated/trade/stoploss', {'id': id, 'stoploss': price});
+  Future<void> setStopLoss(String id, double price) async => await _put(
+      '/v3/futures/isolated/trade/stoploss', {'id': id, 'value': price});
 
   Future<void> applyTpSl(String id, String side, double entryPrice) async {
     final tp = settings.takeProfitPct;
