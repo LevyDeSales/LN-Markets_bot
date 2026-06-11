@@ -1,0 +1,129 @@
+name: macOS Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  macos-arm64-release:
+    name: macOS arm64 release artifacts
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag is production
+        run: |
+          git fetch origin main --depth=1
+          tag_commit="$(git rev-list -n 1 "$GITHUB_REF_NAME")"
+          main_commit="$(git rev-parse origin/main)"
+          if [ "$tag_commit" != "$main_commit" ]; then
+            echo "Release tags must point at origin/main."
+            echo "tag:  $tag_commit"
+            echo "main: $main_commit"
+            exit 1
+          fi
+
+      - name: Verify arm64 runner
+        run: |
+          arch="$(uname -m)"
+          if [ "$arch" != "arm64" ]; then
+            echo "Expected arm64 runner, got $arch."
+            exit 1
+          fi
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Show Flutter version
+        run: flutter --version
+
+      - name: Enable macOS desktop
+        run: flutter config --enable-macos-desktop
+
+      - name: Validate release version
+        run: |
+          release_version="${GITHUB_REF_NAME#v}"
+          pubspec_version="$(awk -F'[:+]' '/^version:/ { gsub(/ /, "", $2); print $2 }' pubspec.yaml)"
+          if [ "$release_version" != "$pubspec_version" ]; then
+            echo "Tag version ($release_version) must match app/pubspec.yaml version ($pubspec_version)."
+            exit 1
+          fi
+          echo "RELEASE_VERSION=$release_version" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Generate macOS release configuration
+        run: flutter build macos --release --config-only
+
+      - name: Build unsigned macOS release app
+        run: >
+          xcodebuild
+          -workspace macos/Runner.xcworkspace
+          -scheme Runner
+          -configuration Release
+          -destination 'platform=macOS'
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGN_IDENTITY=-
+          build
+
+      - name: Package app
+        run: |
+          app_path="build/macos/Build/Products/Release/lnmarkets_bot.app"
+          if [ ! -d "$app_path" ]; then
+            echo "Missing app bundle at $app_path"
+            exit 1
+          fi
+
+          mkdir -p dist/dmg-root
+          zip_name="LN-Markets-Bot-macOS-arm64-v${RELEASE_VERSION}.zip"
+          dmg_name="LN-Markets-Bot-macOS-arm64-v${RELEASE_VERSION}.dmg"
+
+          ditto -c -k --keepParent "$app_path" "dist/$zip_name"
+          cp -R "$app_path" dist/dmg-root/
+          hdiutil create \
+            -volname "LN Markets Bot v${RELEASE_VERSION}" \
+            -srcfolder dist/dmg-root \
+            -ov \
+            -format UDZO \
+            "dist/$dmg_name"
+          rm -rf dist/dmg-root
+
+          (cd dist && shasum -a 256 "$zip_name" "$dmg_name" > SHA256SUMS.txt)
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/*.zip \
+            dist/*.dmg \
+            dist/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "LN Markets Bot $GITHUB_REF_NAME" \
+            --generate-notes \
+            --verify-tag
