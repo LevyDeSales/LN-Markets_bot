@@ -86,6 +86,7 @@ jobs:
           -scheme Runner
           -configuration Release
           -destination 'platform=macOS'
+          -derivedDataPath build/macos/DerivedData
           CODE_SIGNING_ALLOWED=NO
           CODE_SIGNING_REQUIRED=NO
           CODE_SIGN_IDENTITY=-
@@ -93,9 +94,11 @@ jobs:
 
       - name: Package app
         run: |
-          app_path="build/macos/Build/Products/Release/lnmarkets_bot.app"
+          app_path="build/macos/DerivedData/Build/Products/Release/lnmarkets_bot.app"
           if [ ! -d "$app_path" ]; then
             echo "Missing app bundle at $app_path"
+            echo "Available app bundles:"
+            find build/macos -type d -name '*.app' -print || true
             exit 1
           fi
 
