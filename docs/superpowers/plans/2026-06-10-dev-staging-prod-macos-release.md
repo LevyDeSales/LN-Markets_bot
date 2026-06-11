@@ -35,6 +35,7 @@
 - [ ] Build unsigned macOS release artifacts on a macOS arm64 runner.
 - [ ] Publish `.zip`, `.dmg`, and `SHA256SUMS.txt` to GitHub Releases.
 - [ ] Document installation, unsigned app behavior, and release commands.
+- [ ] Use a deterministic Xcode DerivedData path so the packaging step can find the built `.app`.
 
 ### Task 3: Validation And Publish
 
