@@ -16,6 +16,13 @@
 
 Descreva a mudanca em uma ou duas frases.
 
+## Destino
+
+- [ ] Branch curta -> `dev`
+- [ ] `dev` -> `staging`
+- [ ] `staging` -> `main`
+- [ ] `hotfix/*` -> `main`
+
 ## Risco De Trading
 
 - [ ] Nao toca em trading, credenciais ou chamadas LN Markets.
@@ -29,6 +36,7 @@ Descreva a mudanca em uma ou duas frases.
 - [ ] `cd app && flutter analyze`
 - [ ] `cd app && flutter test`
 - [ ] `cd app && flutter build macos --debug --dart-define=LNMBOT_MOCK_MODE=true` quando a mudanca afetar macOS/build/runtime.
+- [ ] Para promocao `staging`/`main`, CI `macOS debug build (mock-safe)` verde.
 
 ## Higiene Do Repo
 
