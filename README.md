@@ -15,7 +15,9 @@
 
 ## 📱 Download
 
-Baixe o APK diretamente na aba [Releases](../../releases/latest).
+Baixe a versão macOS mais recente na aba [Releases](../../releases/latest).
+Os artefatos iniciais para Mac são `.zip` e `.dmg` unsigned para Apple Silicon.
+Veja [docs/release/macos.md](docs/release/macos.md) para instalar e validar.
 
 ---
 
@@ -116,7 +118,7 @@ BUILD_MACOS_DEBUG=1 ./setup.sh
 
 ## 🤝 Contribuição
 
-Use branches curtas, Conventional Commits e PR com squash merge. O fluxo oficial é `feature/*` → `dev` → `main`, com `main` reservado para produção/release.
+Use branches curtas, Conventional Commits e PR com squash merge. O fluxo oficial é `feature/*` → `dev` → `staging` → `main`, com `main` reservado para produção/release.
 
 Veja [CONTRIBUTING.md](CONTRIBUTING.md) para regras de branch, PR, CI, proteção de branches e segurança com credenciais/trading real.
 
